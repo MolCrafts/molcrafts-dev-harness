@@ -64,9 +64,8 @@ verbs; agents are single-axis roles reached only through skills.
 
 ## Law (never violated)
 
-Full text: [`.claude/notes/law.md`](.claude/notes/law.md). No exception unless
-`law.md` names the exempt subsystem; retiring a law needs operator evidence,
-never a skill's judgment.
+Full text: [`.claude/notes/law.md`](.claude/notes/law.md) — see its header for
+how a law is added, changed, or retired.
 
 - **No silent debt.** Rot you touch gets fixed or hard-stops the work; never skip-marked, never left silent in the summary.
 - **`tests/` is unit tests only.** Structural guards only; the install smoke lives in `/check`, never under `tests/`.
