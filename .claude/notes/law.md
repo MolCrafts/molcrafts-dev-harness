@@ -1,12 +1,14 @@
 # Law — never violated
 
-Every rule here outranks scope, minimal-diff, convenience, and everything in
-`notes.md`. There is no "just this once". `CLAUDE.md` carries the one-line index
-under `## Law (never violated)`.
+Every rule here outranks scope, minimal-diff, and convenience. There is no
+"just this once". `CLAUDE.md` carries the one-line index under
+`## Law (never violated)`.
 
 Adding, changing, or repealing a law is the operator's act via `/mol:note`. No
-skill deletes from this file — `/mol:compact` may dedupe and absorb into it,
-nothing more.
+skill retires a law on its own judgment: `/mol:compact` may dedupe and absorb
+into this file freely, but may only *propose* a deletion, and only on evidence
+that the law was overturned on record or that the thing it governed no longer
+exists.
 
 <!-- mol:law:id:no-silent-debt -->
 ## No silent debt
