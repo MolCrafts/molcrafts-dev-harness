@@ -34,15 +34,12 @@ maintained as a `mol*` project — released by `/mol:release` like any other.
 
 - `plugins/<name>/` — the **published** plugins (`mol`, `molexp`, `molq`).
   Each has `.claude-plugin/plugin.json` (Claude) + `.codex-plugin/plugin.json`
-  (Codex) + `skills/` + (for `mol`) `agents/` + `rules/`. Both marketplace
-  manifests must agree; the validator enforces it.
+  (Codex) + `skills/` + (for `mol`) `agents/` + `rules/`.
 - `.claude-plugin/marketplace.json` — Claude marketplace registry (authoritative).
 - `.agents/plugins/marketplace.json` — native Codex registry (mirrors it; no
   version field).
-- `scripts/` — deterministic, **LLM-free** tooling runnable in CI:
-  `validate_repository.py` (structure gate) and `bump_version.py` (release bump).
 - `tests/` — stdlib structural guards (model policy, blueprint mechanism, git
-  publish). CI and pre-commit run these verbatim.
+  publish).
 - `.claude/skills/` — **project-local** maintenance skills for this repo
   (`check`, `new-skill`, `release-bump`); not published plugins.
 - `.claude/notes/` — passive project knowledge.
@@ -84,9 +81,8 @@ how a law is added, changed, or retired.
    `mol_project.release`), then runs the standard fork → PR → green → merge →
    tag chain.
 
-Validation runs at commit (pre-commit), in CI, and in the release gate. There
-is intentionally **no post-edit auto-validation hook** — it blocks structural
-refactors of the marketplace itself; run `/check` on demand instead.
+There is intentionally **no post-edit auto-validation hook** — it blocks
+structural refactors of the marketplace itself; run `/check` on demand.
 
 ## Adding a skill
 
