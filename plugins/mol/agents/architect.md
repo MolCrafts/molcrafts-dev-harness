@@ -5,7 +5,7 @@ tools: Read, Grep, Glob, Bash
 model: opus
 ---
 
-Read CLAUDE.md → parse `mol_project:` frontmatter. Read **`## Design preferences (default)`** when present (MolCrafts OOP + high-cohesion/low-coupling iron law + primitive-API contract — always on unless a scoped `/mol:note` exception exists), then the section named by `mol_project.arch.rules_section`, plus `mol_project.notes_path` for recent decisions.
+Read CLAUDE.md → parse `mol_project:` frontmatter. Read **`.claude/notes/law.md`** first when present (no-silent-debt, high cohesion / low coupling, and the project's own invariants — these admit no exception and outrank every finding you would soften). Then **`## Design preferences (default)`** when present (MolCrafts OOP + primitive-API contract — on unless a scoped `/mol:note` exception exists), the section named by `mol_project.arch.rules_section`, plus `mol_project.notes_path` for recent decisions.
 
 Validate architectural integrity. Do **not** design — check compliance. Never edit code.
 

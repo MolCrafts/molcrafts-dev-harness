@@ -27,9 +27,9 @@ Does not require existing `mol_project:` frontmatter — this is the tool that c
 ```
 docs/                    public-facing documentation
 .claude/                 (canonical Claude Code project folder)
-  notes/                 passive internal context — notes, architecture.md,
-                         decisions, contracts, handoffs, rubrics, debt,
-                         open questions. Outlives features.
+  notes/                 passive internal context — law.md, notes,
+                         architecture.md, decisions, contracts, handoffs,
+                         rubrics, debt, open questions. Outlives features.
   specs/                 active runtime artifacts — alive, ticked off as
                          /mol:impl works, deleted on completion.
   agents/, skills/,      Claude Code's own runtime configuration.
@@ -93,6 +93,8 @@ Smallest set that gives this repo a useful harness. Reasonable defaults:
 
 - thin `CLAUDE.md` (router) — always
 - `.claude/notes/README.md` — explains directory
+- `.claude/notes/law.md` — the inviolable rules; the one file `/mol:compact`
+  may never delete from
 - `.claude/notes/notes.md` — passive memory, `/mol:note` writes here
 - `.claude/notes/design-preferences.md` — full rule text CLAUDE.md indexes
 - `.claude/specs/` (empty dir) — `/mol:spec` writes here
@@ -157,13 +159,20 @@ Condensed from `rules/design-principles.md`. Focus on structural drift; skip con
   them. Over budget is almost always inlined rule prose — flag 🟡 and name
   the section to move to `.claude/notes/`.
 - **Design preferences** — managed section should carry
-  `## Design preferences (default)` as **one line per rule** (both iron
-  laws, OOP, primitive APIs, no factories, no god context, no
-  all-in-one façade, mirrored tests) plus a pointer to
+  `## Design preferences (default)` as **one line per rule** (OOP,
+  primitive APIs, no factories, no god context, no all-in-one façade,
+  mirrored tests) plus a pointer to
   `.claude/notes/design-preferences.md`, which must exist and hold the
   full text. Missing → 🟡 repair via managed-section refresh. **Rule
   prose inlined in CLAUDE.md → 🟡**: move it to the notes file and
   leave the one-liner.
+- **Law** — `.claude/notes/law.md` must exist and hold the inviolable
+  rules, one `<!-- mol:law:id:<slug> -->` marker each, with
+  `## What must never change casually` in CLAUDE.md as its one-line
+  index. Missing file → 🟡. An inviolable rule stated **only** outside
+  `law.md` (an "iron law" section in `design-preferences.md`, an
+  absolute in `notes.md`) → 🟡 promote; the body moves, CLAUDE.md keeps
+  the one-liner. Never demote or reword a law during repair.
 
 For projects with `mol_project:` frontmatter:
 - `specs_path` → under `.claude/specs/`. Flag if `docs/`, `.claude/notes/`, or bare `.claude/`.
@@ -336,14 +345,24 @@ router — move the prose to notes and leave the pointer.
 - Claude Code runtime config (agents, skills, hooks, settings):
   `.claude/agents/`, `.claude/skills/`, `.claude/hooks/`, `.claude/settings.json`
 
+## Law (never violated)
+
+Full text: `.claude/notes/law.md`. These outrank scope, minimal-diff, and every
+preference below. No exception without the operator repealing the law; no skill
+may weaken or delete one, `/mol:compact` included.
+
+- **No silent debt.** Rot you touch gets fixed or hard-stops the work; never skip-marked, never left silent in the summary.
+- **High cohesion, low coupling.** One job per module; deps through explicit seams. A unit is green via `$META.build.test_single` alone — if it needs the full suite, a sibling module's real implementation, or external processes, the design is wrong.
+
+<add project invariants here — public APIs, on-disk formats, contracts that need
+a deliberate decision to break. One line each; body goes in law.md>
+
 ## Design preferences (default)
 
-Full text: `.claude/notes/design-preferences.md`. Applies unless the operator
-names an exception via `/mol:note`. CLAUDE.md carries **one line per rule** —
-it is an index, not the rulebook.
+Full text: `.claude/notes/design-preferences.md`. Defaults, **not** law — the
+operator can name an exception via `/mol:note`. CLAUDE.md carries **one line
+per rule**; it is an index, not the rulebook.
 
-- **Iron law — no silent debt.** Rot you touch gets fixed or hard-stops the work; never skip-marked, never left silent in the summary.
-- **Iron law — high cohesion, low coupling.** One job per module; deps through explicit seams. A unit is green via `$META.build.test_single` alone — if it needs the full suite, a sibling module's real implementation, or external processes, the design is wrong.
 - **OOP by default.** Types with methods, not free helpers.
 - **Primitive APIs.** Construct → configure → one concern → read result.
 - **Inline until the second use.** Extract at a second call site, not before.
@@ -363,10 +382,6 @@ For non-trivial work, prefer:
 3. review (`/mol:review`)
 4. capture decisions (`/mol:note` — harness sync, not append-only)
 
-## What must never change casually
-
-<list invariants, public APIs, on-disk formats, contracts requiring a deliberate decision to break>
-
 <!-- mol:bootstrap:managed end -->
 
 <!-- Free-form additions below this line are preserved across re-runs.
@@ -377,23 +392,33 @@ If user opts into `mol` plugin contract: prepend `mol_project:` YAML per `rules/
 
 ---
 
-## .claude/notes/design-preferences.md (canonical body)
+## .claude/notes/law.md (canonical body)
 
-Written on the create path, refreshed on update when the file is missing or
-predates the current contract. This is where the prose lives so CLAUDE.md can
-stay an index.
+The inviolable rules. Written on the create path; on the update path, created
+when missing and **absorbed into** — never rewritten — when it already exists.
+
+A law is not a strong preference. It is the fixed point the rest of the harness
+is measured against: `/mol:compact` resolves every conflict against this file
+and may not delete from it, and `/mol:note` may not weaken one. Adding or
+repealing a law is the operator's act, stated as such.
+
+Keep each law to a heading, a stable id marker, and a short imperative body.
+Project invariants (public APIs, on-disk formats, wire contracts) go here too —
+that is what `## What must never change casually` used to hold.
 
 ```markdown
-# Design preferences — full text
+# Law — never violated
 
-CLAUDE.md carries the one-line index of these rules. This file is the detail.
+Every rule here outranks scope, minimal-diff, convenience, and everything in
+`design-preferences.md`. There is no "just this once". CLAUDE.md carries the
+one-line index under `## Law (never violated)`.
 
-**Default for all MolCrafts projects.** Apply unless the operator **explicitly**
-requires a functional (or other) style for a named subsystem — then capture the
-exception with `/mol:note` and scope it. Do **not** invent a functional style on
-your own.
+Adding, changing, or repealing a law is the operator's act via `/mol:note`. No
+skill deletes from this file — `/mol:compact` may dedupe and absorb into it,
+nothing more.
 
-## Iron law — no silent debt
+<!-- mol:law:id:no-silent-debt -->
+## No silent debt
 
 Discover anti-pattern / failing test / broken invariant / clear bug in the
 surface you touch or depend on → **prioritize or hard-stop**:
@@ -404,13 +429,14 @@ surface you touch or depend on → **prioritize or hard-stop**:
    `/mol:debug` / `/mol:refactor` / supersede.
 3. **Name it** in the summary (found / fixed / blocking). Silence = process failure.
 
-Outranks "stay in scope" / "minimal diff" when those mean knowingly leaving rot
-you already saw.
+Outranks "stay in scope" and "minimal diff" whenever those mean knowingly
+leaving rot you already saw.
 
-## Iron law — high cohesion, low coupling
+<!-- mol:law:id:cohesion-coupling -->
+## High cohesion, low coupling
 
-**Every module** (file / type / package) is a self-contained unit. A **product**
-iron law, not optional style; it applies to every file.
+**Every module** (file / type / package) is a self-contained unit. Applies to
+every file, not only the important ones.
 
 - **High cohesion** — one clear responsibility. Split when a unit accumulates
   more than one coherent job.
@@ -427,6 +453,31 @@ If a change "only works when the whole suite runs", or a unit test must boot
 sibling modules' real implementations, the full app, network, or external
 processes → the design is too coupled. **Stop**, split the boundary, inject the
 dependency, or route `/mol:refactor`. Do not "fix it with more integration tests."
+
+<!-- add project invariants below, one `<!-- mol:law:id:<slug> -->` each -->
+```
+
+---
+
+## .claude/notes/design-preferences.md (canonical body)
+
+Written on the create path, refreshed on update when the file is missing or
+predates the current contract. This is where the prose lives so CLAUDE.md can
+stay an index.
+
+**Preferences, not law.** Anything here can be overridden by the operator for a
+named subsystem. If a rule cannot be overridden, it belongs in `law.md`.
+
+```markdown
+# Design preferences — full text
+
+CLAUDE.md carries the one-line index of these rules. This file is the detail.
+Inviolable rules are not here — they are in `.claude/notes/law.md`.
+
+**Default for all MolCrafts projects.** Apply unless the operator **explicitly**
+requires a functional (or other) style for a named subsystem — then capture the
+exception with `/mol:note` and scope it. Do **not** invent a functional style on
+your own.
 
 ## Prefer
 
@@ -471,13 +522,16 @@ Details: `tester` agent.
 ```
 .claude/notes/
   README.md             # what this directory is for, how to navigate
+  law.md                # the inviolable rules + project invariants. Outranks
+                          every other file here. /mol:compact may absorb into
+                          it, never delete from it.
   notes.md              # evolving decisions, captured by /mol:note
   architecture.md       # project blueprint — modules, public surface, style,
                           layer roles. Stub points at /mol:map; populated
                           by /mol:map. Consumed by `librarian` during
                           /mol:spec Step 4.5.
-  design-preferences.md # full text of the design rules CLAUDE.md indexes.
-                          Written by bootstrap; CLAUDE.md links, never inlines.
+  design-preferences.md # full text of the *overridable* design rules CLAUDE.md
+                          indexes. Written by bootstrap; CLAUDE.md links.
   open-questions.md     # things uncertain during bootstrap; user fills over time
 ```
 
@@ -517,6 +571,8 @@ Skills/agents/hooks/settings under `.claude/` added later only when justified. D
 | `.agent/README.md`          | `.claude/notes/README.md`   | v0.3.0 |
 | `mol_project.notes_path: .agent/...` or `.claude/NOTES.md` | `mol_project.notes_path: .claude/notes/...` | v0.3.0: frontmatter follows the path move |
 | `mol_project.perf:` block in CLAUDE.md frontmatter | (delete) | `perf.focus` was a single-value enum that didn't scale; `optimizer` agent now detects catalogs per file |
+| `## Iron law — …` sections in `.claude/notes/design-preferences.md` | `.claude/notes/law.md` | inviolable rules need a file `/mol:compact` is forbidden to delete from; preferences are overridable, laws are not |
+| `## What must never change casually` (any spelling) in CLAUDE.md | `## Law (never violated)`, body → `.claude/notes/law.md` | project invariants are laws; same file, same protection |
 
 Add new rows as new conventions are codified. Layout violation **not** in this table = content-level drift → manual TODO; do not invent moves.
 
@@ -537,6 +593,9 @@ Add new rows as new conventions are codified. Layout violation **not** in this t
 - **Don't** rewrite anything outside managed sections, `mol_project:` block, or paths approved for migration.
 - **Don't** invent migrations not in the table. The table *is* the version-spec for layout.
 - **Don't** delete user-authored notes / decisions / specs during migration. Move, never drop.
+- **Don't** delete, reword, or soften a law. Migration into `law.md` is a
+  **move**; an existing `law.md` is absorbed into, never regenerated. Repeal is
+  the operator's act.
 - **Don't** auto-delete `status: done` spec — deletion contract belongs to `/mol:impl`. Flag as manual TODO.
 - **Don't** run update on dirty tree without explicit `--allow-dirty` override.
 

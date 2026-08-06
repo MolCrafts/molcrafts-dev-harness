@@ -12,8 +12,8 @@ Read CLAUDE.md → parse `mol_project:` (`$META`).
 
 **Not a diary.** One live rule per topic; git is the archive. Every run: reconcile → clean → place → rewrite.
 
-Scope is the topic you name. Sweeping every *other* claim in the harness for
-drift is `/mol:compact`.
+Scope is the topic you name. Running this same reconcile across *every* topic
+at once is `/mol:compact`.
 
 ## Write surface
 
@@ -22,7 +22,8 @@ drift is `/mol:compact`.
 | `CLAUDE.md` (preserve `mol_project:` unless decision renames a path field) | Project source, tests, public `docs/` |
 | `$META.notes_path` (default `.claude/notes/notes.md`) | `.claude/specs/**` |
 | `.claude/notes/<topic>.md` (create/rewrite/delete) | Plugin agent/skill definitions |
-| `architecture.md` — only strike a false one-line claim; full rebuild → `/mol:map` | Binaries / generated assets |
+| `.claude/notes/law.md` — **only** when the user stated the rule as inviolable | Binaries / generated assets |
+| `architecture.md` — only strike a false one-line claim; full rebuild → `/mol:map` | |
 
 ## Procedure
 
@@ -66,12 +67,19 @@ Do **not** ask which is correct when the user just decided. Ask only if two *new
 
 | Stability | Home |
 |---|---|
+| **Inviolable** — no exception, ever | `.claude/notes/law.md` under `<!-- mol:law:id:<slug> -->` + one line in CLAUDE.md `## Law (never violated)` |
 | Stable, short, every agent must see | `CLAUDE.md` (thin router) |
 | Stable, long | `.claude/notes/<topic>.md` + one link from CLAUDE.md |
 | Evolving | `notes.md` — **rewrite** same topic key; don't date-stack clones |
 | Module map | Prefer `/mol:map`; one-line claim fix only |
 
 Never leave the same rule in both notes.md and CLAUDE.md.
+
+**Law is a promotion, not a guess.** Route to `law.md` only when the user said
+the rule admits no exception ("绝不"/"永远不要"/"never, under any circumstances")
+or is a project invariant (public API, on-disk format, wire contract). Emphasis
+alone is not enough — ask. A `retract` on an existing law needs the user to say
+they are repealing it; otherwise report the conflict and stop.
 
 ### 6. Write
 

@@ -12,7 +12,7 @@ Read CLAUDE.md → parse `mol_project:` (`$META`); else emit adoption hint and s
 
 `/mol:impl` orchestrates a **single** spec's Tasks checklist: pre-flight → iterate each task (RED → GREEN → tick) → verify → simplify → docs Mode A (public surface) → finalize (acceptance ledger + commit + auto evaluators + auto-close). `/mol:simplify`, `/mol:docs` Mode A (when applicable), and `/mol:close` run automatically every pass — never prompt the operator for them. All stage-policy decisions for hygiene/legacy delegate to `/mol:simplify`.
 
-**Iron law (CLAUDE.md Design preferences):** if impl work discovers a pre-existing failure, Design anti-pattern, or broken invariant in the touched/dependent surface → **prioritize** fix (local) or **stop** and route to `/mol:debug` / `/mol:refactor` / supersede. Never ignore, baseline-away, or land the feature on top of known rot.
+**Law — no silent debt (`.claude/notes/law.md`):** if impl work discovers a pre-existing failure, Design anti-pattern, or broken invariant in the touched/dependent surface → **prioritize** fix (local) or **stop** and route to `/mol:debug` / `/mol:refactor` / supersede. Never ignore, baseline-away, or land the feature on top of known rot.
 
 **Chain / batch:** if `$ARGUMENTS` matches a chain prefix with ≥2 specs (`<prefix>-NN-*` under `$META.specs_path`), **forward immediately to `/mol:impl-all <prefix>`** and exit. Prefer `/mol:impl-all` as the default user-facing implement command for multi-spec work.
 

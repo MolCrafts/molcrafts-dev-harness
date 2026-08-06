@@ -62,15 +62,14 @@ and [`plugins/mol/rules/agent-design.md`](plugins/mol/rules/agent-design.md).
 The `check` skill (§ semantic contracts) validates compliance. Skills are user
 verbs; agents are single-axis roles reached only through skills.
 
-## Must never change casually
+## Law (never violated)
 
-- **Dual-manifest parity.** Every plugin's Claude + Codex manifest agree on
-  name, version, and source. `scripts/validate_repository.py` gates it.
-- **Git publish invariants.** `origin` = fork (branch push only); `upstream` =
-  canonical (PR → green checks → merge only). Pre-commit ≡ CI. Never merge red.
-  See [`plugins/mol/rules/git-publish.md`](plugins/mol/rules/git-publish.md).
-- **One workflow file per skill.** `skills/CODEX.md` translates runtime only;
-  never a second copy of a workflow body.
+Full text: [`.claude/notes/law.md`](.claude/notes/law.md). No exception without
+the operator repealing the law; no skill may weaken or delete one.
+
+- **Dual-manifest parity.** Every plugin's Claude + Codex manifest agree on name, version, and source. `scripts/validate_repository.py` gates it.
+- **Git publish invariants.** `origin` = fork (branch push only); `upstream` = canonical (PR → green checks → merge only). Pre-commit ≡ CI. Never merge red.
+- **One workflow file per skill.** `skills/CODEX.md` translates runtime only; never a second copy of a workflow body.
 
 ## Default workflow
 

@@ -1,169 +1,183 @@
 ---
 name: compact
-description: "Sweep the whole harness and drop what the repo no longer supports — dead paths, contradicted claims, duplicated rules, finished specs. Free-form: 压缩记忆/harness 臃肿了/清理过时的/compact the notes. Writes harness knowledge only."
-argument-hint: "<optional scope: a notes file, a topic, or empty for the whole harness>"
+description: "Compress the harness itself — law, CLAUDE.md, AGENTS.md, notes, README, architecture, spec index. One live statement per topic; superseded/duplicate/finished get deleted. Free-form: 压缩记忆/harness 臃肿了/清理过时的/只保留最新的/compact the notes. Writes harness knowledge only; never reads project source."
+argument-hint: "<optional scope: a harness file, a topic key, or empty for the whole harness>"
 ---
 
 > **Codex:** Read `../CODEX.md` before executing this shared workflow. Claude Code follows the workflow directly.
 
-# /mol:compact — Harness Memory Compaction
+# /mol:compact — Harness Compaction
 
 Read CLAUDE.md → parse `mol_project:` (`$META`); else emit adoption hint and stop.
 
-`/mol:note` keeps one topic honest at the moment you decide something.
-`/mol:compact` sweeps **everything else** — the claims nobody revisited. Harness
-rot is silent by construction: a note that describes a deleted module keeps
-reading like fact, and the next agent believes it.
+`/mol:note` reconciles **one** topic when you decide it. `/mol:compact` runs
+that same reconcile across **every** topic at once, leaving one live statement
+per topic. Every skill writes into the harness; this is the only one that
+sweeps it.
 
-**Staleness is decided by evidence, never by age.** A rule written a year ago
-that still matches the repo is current. A rule written last week naming a file
-that no longer exists is dead. Sorting by timestamp and keeping "the latest"
-would delete load-bearing knowledge and keep fresh mistakes — do not do it.
+**Reads the harness, not the repo.** Whether a note still matches the code is
+`/mol:map` (blueprint) and `/mol:note` (one rule). Evidence here is internal:
+what the law says, what was written last, what is said twice, what is finished.
 
-## Write surface
+## Surface
 
-| Edit | Never |
+| Compact | Never |
 |---|---|
-| `CLAUDE.md` (preserve `mol_project:`) | Project source, tests, public `docs/` |
-| `$META.notes_path` and `.claude/notes/**` | Spec **bodies** (only INDEX rows + done-spec removal) |
-| `.claude/specs/INDEX.md` | Plugin agent/skill definitions |
-| `architecture.md` — strike dead claims only; full rebuild → `/mol:map` | Anything you did not verify |
+| `.claude/notes/law.md` — **dedupe and absorb only, never delete** | Project source, tests, public `docs/`, public `README.md` |
+| `CLAUDE.md`, `AGENTS.md` / `AGENT.md` (preserve `mol_project:`) | Spec **bodies** — INDEX rows and done-spec flagging only |
+| `$META.notes_path` and `.claude/notes/**`, incl. its `README.md` | Plugin agent / skill definitions |
+| `.claude/notes/architecture.md` — strike superseded claims; rebuild is `/mol:map` | Any statement whose topic you could not place |
+| `.claude/specs/INDEX.md` | |
+
+## Order of authority
+
+Every conflict resolves down this list — never by file size, never by which
+file you happened to read first.
+
+1. **law** — `.claude/notes/law.md`. Outranks everything. A harness statement
+   contradicting a law is dead on sight, whatever its date.
+2. **newest** — the later-written statement wins. Recency comes from git
+   (`git log -1 --format=%ad -- <file>`, `git blame -L<n>,<n>` for a line), not
+   from how a sentence sounds. Untracked or uncommitted → treat as newest.
+3. **closest to enforcement** — a rule stated where it is executed beats the
+   same rule retold in prose somewhere else.
+
+Two **laws** in conflict is not yours to resolve: report both and stop.
 
 ## Procedure
 
 ### 1. Inventory
 
-List before reading: `CLAUDE.md`, `$META.notes_path`, every file under
-`.claude/notes/**`, `.claude/specs/INDEX.md` and the spec files. Record each
-file's line count — the sweep reports size as well as truth.
+List paths and line counts *before* reading: `law.md`, `CLAUDE.md`,
+`AGENTS.md`, `$META.notes_path`, every file under `.claude/notes/**`,
+`.claude/specs/INDEX.md` and each spec's frontmatter. The sweep reports size as
+well as truth.
 
-`$ARGUMENTS` may narrow the scope to one file or one topic. Empty = whole harness.
+Read `law.md` first — it is the tie-breaker for every step below.
 
-### 2. Extract checkable claims
+`$ARGUMENTS` narrows to one file or one topic key. Empty = whole harness.
 
-Walk every harness file and pull out each assertion that names something the
-repo can confirm or deny:
+### 2. Cluster by topic
 
-| Claim shape | How to check |
-|---|---|
-| a path (`src/foo/bar.ts`, `scripts/x.mjs`) | does it exist |
-| a symbol (`FooClass`, `register_bar`) | grep the source |
-| a command / script (`npm run check:contract`, `cargo xtask`) | is it in the manifest |
-| a config key or field (`resolve.dedupe`, `[tool.ruff]`) | read the config |
-| a count ("four plugins", "118 elements") | count it |
-| a dependency or version floor | read the manifest / lockfile |
+Reduce every rule, claim, and decision to a **topic key** — same slug
+vocabulary `/mol:note` uses (`naming-n-atoms`, `arch-forces-layout`, …). A
+cluster with one member in one file is healthy; skip it. Clusters that span
+files, or hold more than one statement, are the entire job.
 
-Prose with no anchor — style preferences, rationale, "why we chose X" — is
-**not** a checkable claim. It is carried forward untouched.
+Prose carrying no rule — rationale, "why we chose X", worked examples — is not
+a statement. It passes through untouched.
 
 ### 3. Classify
 
-Every checkable claim lands in exactly one bucket, each with its evidence:
+Exactly one member of each cluster survives, chosen by § Order of authority.
+Every other member is one of:
 
-- **dead** — the named thing does not exist. *Evidence: the miss.*
-- **contradicted** — the repo says the opposite (a note says `dist/` is
-  committed; `.gitignore` ignores it). *Evidence: path:line on both sides.*
-- **duplicate** — the same rule stated in two or more places. *Evidence: the
-  list of locations.* Keep the one closest to where it is enforced; the others
-  become a pointer, not a copy.
-- **superseded** — two live claims about one topic disagree. The one the repo
-  supports wins; the other is dead.
-- **holds** — verified true. Untouched, and **not** reported as noise.
-- **unverifiable** — a checkable-looking claim whose anchor could not be
-  resolved (private submodule, generated file, external service). **Kept**, and
-  listed separately so a human can rule on it.
+- **superseded** — same topic, contradicted by the survivor. *Evidence: both
+  path:line, and which is newer.*
+- **duplicate** — same topic, agrees with the survivor. *Evidence: the location
+  list.* Canonical home per `/mol:note` § 5; the rest become a one-line pointer
+  or nothing.
+- **finished** — describes work that is done: `status: done` specs, landed
+  migrations, "will do X" where X is now stated as done, `(deprecated)`
+  annotations, dated diary entries stacked on one topic, `removed X on
+  YYYY-MM-DD` tombstones.
+- **violates-law** — contradicts `law.md`. Dead regardless of date.
+- **holds** — the survivor. Untouched, and **not** reported as noise.
+- **unplaceable** — no topic could be assigned, or two statements could not be
+  ordered. **Kept**, and listed separately for the user to rule on.
 
-Also collect, without classifying as claims:
+Also collect, without deleting:
 
-- specs with `status: done` still present → flag (deletion belongs to `/mol:impl`)
-- INDEX rows with no file, and files with no INDEX row
-- notes files nothing links to and nothing references
-- files over ~200 lines, and `CLAUDE.md` over ~100 → split candidates
+- inviolable-sounding rules living outside `law.md` → **promotion** candidates (§ 5)
+- `status: done` specs still on disk → flag; deletion belongs to `/mol:close`
+- INDEX rows with no file, files with no INDEX row
+- `CLAUDE.md` over ~100 lines (managed body over ~60), any notes file over
+  ~200 → split candidates
 
-### 4. Report before writing
+### 4. Report, then wait
 
-Grouped by file, each line carrying its evidence:
+Grouped by file, evidence on every line:
 
 ```
 .claude/notes/notes.md
-  dead        L25  "CI runs `check:contract`" — no such script in package.json
-  contradicted L20 "dist/ committed" — .gitignore:45 ignores it
-  duplicate   L31  meta-version scheme — also CLAUDE.md:88, kept there
+  superseded  L25  spec-status wording — CLAUDE.md:88 restates it, newer (2026-07-02 vs 2026-03-11)
+  finished    L40  "migrate .agent/ → .claude/" — landed; migration table row exists
+  duplicate   L31  meta-version scheme — also CLAUDE.md:88, canonical there
 CLAUDE.md
-  dead        L43  "src/types/contract*.ts" — no match in repo
-unverifiable
-  .claude/notes/release.md L12 "signing key in 1Password" — cannot check
+  violates-law L43 "skip the failing test to unblock" — law.md:no-silent-debt
+promotions
+  .claude/notes/design-preferences.md L10  iron law "no silent debt" → law.md
+unplaceable
+  .claude/notes/release.md L12  "signing key rotation" — no other statement on this topic, no date
 ```
 
-Then a size table: file, lines before, lines after.
+Then a size table (file, lines before, lines after).
 
-**Wait for approval.** Compaction is the one harness operation whose whole job
-is removal; a wrong call costs knowledge. Per-item rejection allowed. Nothing
-is written before the user answers.
+**Wait for approval.** This is the one harness skill whose job is deletion; a
+wrong call costs knowledge. Per-item rejection allowed. Nothing is written
+before the user answers.
 
 ### 5. Apply
 
-- **dead** — delete the claim. If it was the only content of a section, delete
-  the section. If deleting it leaves a file empty, delete the file and its
+- **superseded / violates-law / finished** — delete the statement. Section left
+  empty → delete the section. File left empty → delete the file and its
   inbound links.
-- **contradicted** — rewrite to what the repo actually does, naming the
-  evidence path in the new text so the next sweep can re-check it cheaply.
-- **duplicate** — keep one, replace the rest with a one-line pointer.
-- **superseded** — delete the loser.
-- **holds / unverifiable** — untouched.
+- **duplicate** — keep the canonical one; others become a one-line pointer, or
+  nothing.
+- **promotion** — **move** into `law.md` under `<!-- mol:law:id:<slug> -->`,
+  leaving a one-line index entry at the origin. Only for items the user
+  approved **as a law** — never promote on your own reading of emphasis.
+- **unplaceable / holds** — untouched.
 
-Never rewrite a claim into something vaguer to make it survive. If it cannot be
-stated checkably, it is prose — move it to the rationale paragraph or drop it.
+Never soften a statement to make it survive. If it cannot stand as one live
+rule, it is prose: keep it as rationale, or drop it.
 
-git is the archive. Do not add "removed X on YYYY-MM-DD" tombstones; that is
-how the file grew in the first place.
+git is the archive. No tombstones, no changelog sections, no `(deprecated)`
+annotations — that residue is exactly what this skill exists to remove.
 
 ### 6. Verify
 
-Re-run § 2 extraction on the written files. Every remaining checkable claim
-must verify, or be on the unverifiable list. Report any that do not — a claim
-you rewrote and that still fails is a bug in the rewrite, not a leftover.
+Re-cluster the written files. Every topic must hold exactly one live statement;
+nothing may contradict `law.md`; every pointer must resolve. A cluster still
+holding two survivors is a bug in the apply, not leftover rot.
 
 ### 7. Report
 
-- files touched, claims removed / rewritten / merged by bucket
-- size table before → after
-- unverifiable list, verbatim, for the user to rule on
-- specs flagged for `/mol:impl` to delete
-
-One-line F2 summary:
+Files touched, per-bucket counts, size table before → after, unplaceable list
+verbatim, promotions applied, specs flagged for `/mol:close`.
 
 ```
-/mol:compact: 7 dead, 2 contradicted, 3 duplicates across 4 files; 612 → 431 lines
+/mol:compact: 7 superseded, 3 duplicates, 2 finished across 5 files; 612 → 431 lines; 1 promoted to law
 ```
 
 No-op branch:
 
 ```
-/mol:compact: every checkable claim still holds; nothing to compact
+/mol:compact: one live statement per topic already; nothing to compact
 ```
 
 ## Guardrails
 
-- **Never delete what you did not check.** A claim you do not understand is
-  `unverifiable`, not `dead`. Silence is not evidence.
-- **Never compact by age.** No "keep the newest N", no timestamp sort, no
-  "this looks old". The repo is the only authority.
-- **Never touch project source, tests, `docs/`, or spec bodies.** Harness
-  knowledge only.
-- **Never delete a user-authored note wholesale** because it is long. Long and
-  true is a split candidate, not a deletion.
+- **Never delete a law.** Dedupe and absorb only. Repeal is the operator's act
+  through `/mol:note`. A skill able to delete its own constraints has none.
+- **Never resolve two conflicting laws.** Report both and stop.
+- **Never compact by age alone.** Recency breaks ties *within* a topic. Old and
+  unopposed is current, not stale — "keep the newest N" would delete
+  load-bearing knowledge and keep fresh mistakes.
+- **Never read project source to justify a deletion.** Out of scope by design;
+  `/mol:map` owns repo truth.
+- **Never delete a long user-authored note for being long.** Long and unopposed
+  is a split candidate.
+- **Never touch project source, tests, `docs/`, public `README.md`, or spec bodies.**
 - **Never write before approval.** Unlike `/mol:map`, this skill removes.
-- **No tombstones, no changelog sections, no "(deprecated)" annotations.** Git
-  holds the history; the file holds the current truth.
 - **One pass, no recursion.** If applying reveals more drift, report it and let
   the user re-run rather than looping.
 
 ## Idempotency
 
 - Nothing stale → single-line no-op, zero writes.
-- Re-run right after a run → no-op, since every surviving claim just verified.
-- A claim rewritten to name its evidence path verifies faster on the next sweep.
+- Re-run right after a run → no-op; every surviving topic is already singular.
+- Narrowed by `$ARGUMENTS` → only that file or topic, same rules.
 
 ## Bilingual
 

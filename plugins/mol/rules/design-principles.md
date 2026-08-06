@@ -28,11 +28,12 @@ A skill or agent that prescribes ten exact steps is brittle. A skill
 that names three principles and trusts the agent to apply them is
 durable. Prefer the second.
 
-### 0.1 Project iron law — no silent debt
+### 0.1 Project law — no silent debt
 
-Bootstrapped projects ship this in CLAUDE.md under Design preferences.
-It is a **product** iron law for every MolCrafts repo, not optional
-style:
+Bootstrapped projects ship this in `.claude/notes/law.md`, indexed from
+CLAUDE.md under `## Law (never violated)`. It is a **law** for every
+MolCrafts repo, not an overridable preference — and no skill may delete
+it, `/mol:compact` included:
 
 - Discovering an anti-pattern, pre-existing failure, or broken
   invariant in the working surface → **prioritize fix or hard-stop
@@ -46,11 +47,10 @@ Skills that snapshot "pre-existing red" for *their own* regression
 gates (e.g. `/mol:simplify`) must still **surface** those failures as
 priority debt and must not treat silence as success.
 
-### 0.2 Project iron law — high cohesion, low coupling
+### 0.2 Project law — high cohesion, low coupling
 
-Also shipped under CLAUDE.md `## Design preferences (default)`, next
-to the OOP defaults. **Every module** (file / type / package) in a
-MolCrafts product is constrained:
+Also shipped in `.claude/notes/law.md`. **Every module** (file / type /
+package) in a MolCrafts product is constrained:
 
 - **High cohesion** — one clear responsibility per module; split when
   a unit accumulates more than one coherent job.
@@ -74,6 +74,19 @@ Enforced by: bootstrap managed section + `architect` (coupling /
 isolation anti-patterns) + `tester` (unit scope = one module) +
 `implementer` / `spec-writer` (Design preferences).
 
+### 0.3 Law is a category, not an adjective
+
+`.claude/notes/law.md` holds the rules that admit **no** exception —
+§ 0.1, § 0.2, and each project's own invariants (public APIs, on-disk
+formats, wire contracts). `.claude/notes/design-preferences.md` holds
+everything the operator *can* override for a named subsystem.
+
+The split exists so compaction has a fixed point: `/mol:compact` resolves
+every harness conflict against `law.md` first and may absorb into it, but
+may never delete from it. A skill able to delete its own constraints has
+none. Adding, changing, or repealing a law is the operator's act, stated
+as such, through `/mol:note`.
+
 ## 1. Four-Zone Layering
 
 Every well-shaped repository separates four kinds of content. Mixing them
@@ -87,7 +100,7 @@ poisons future agents because they cannot tell what they are reading.
 ┌──────────────────────────────────────────────────────────────────────┐
 │  .claude/  (everything Claude Code & mol read at the project level)  │
 │                                                                      │
-│   .claude/notes/    passive internal context (mol): notes,           │
+│   .claude/notes/    passive internal context (mol): law.md, notes,   │
 │                     architecture.md, decisions, contracts, handoffs, │
 │                     rubrics, debt, open questions. Outlives features.│
 │                                                                      │
@@ -144,12 +157,13 @@ layout.
   the active/passive contract that `/mol:impl`'s deletion behavior
   depends on.
 
-- **L3.** `CLAUDE.md` is a short router (≤ ~150 lines is a good
-  budget). It answers: *what is this repo?*, *where do things live?*,
-  *what must never change casually?*, *what is the default workflow?*
-  It links to files; it does not embed them. A CLAUDE.md that grows
-  past two screens is a smell — promote sections to `.claude/notes/`
-  and link.
+- **L3.** `CLAUDE.md` is a short router (**≤ ~100 lines**, managed body
+  ≤ ~60). It answers: *what is this repo?*, *where do things live?*,
+  *what is law?*, *what is the default workflow?* — **one line per
+  rule**, linking to `.claude/notes/law.md` and
+  `.claude/notes/design-preferences.md` for the bodies. It links to
+  files; it does not embed them. Over budget is almost always inlined
+  rule prose — promote it and leave the one-liner.
 
 - **L4.** Specs are alive. `/mol:spec` writes them under
   `.claude/specs/` with a checkbox-tracked Tasks section. `/mol:impl`
