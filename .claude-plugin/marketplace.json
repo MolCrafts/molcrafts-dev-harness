@@ -22,7 +22,7 @@
       "name": "molexp",
       "source": "./plugins/molexp",
       "description": "molexp data-workspace tooling \u2014 adopt legacy experiment directories into Workspace \u2192 Project \u2192 Experiment \u2192 Run.",
-      "version": "0.15.0",
+      "version": "0.16.0",
       "keywords": [
         "molexp",
         "experiment",
