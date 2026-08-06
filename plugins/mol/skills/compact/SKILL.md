@@ -61,7 +61,37 @@ Two **laws** in conflict is not yours to resolve: report both and stop.
 
 One statement with **no competitor** never reaches this ladder. Rule 2 breaks
 ties; it does not retire an uncontested rule the code happens to violate — see
-§ Guardrails.
+§ When a rule may be deleted.
+
+## When a rule may be deleted
+
+The question every deletion answers: **can this rule still be violated?**
+
+| State | Meaning | Action |
+|---|---|---|
+| violated right now | subject exists, code disobeys | **debt** — keep, report with a route |
+| obeyed | subject exists, code complies | **holds** — keep, silent |
+| **moot** | the thing it governs is gone — no code could obey or break it | **propose deletion** |
+| **overturned** | the operator reversed it, in the harness or on record | **propose deletion** |
+
+Only the last two rows delete, and only two things count as evidence:
+
+1. **An explicit reversal by the operator.** "改成…", "不再…", "以后只能用 X",
+   `**Supersedes**:` written by `/mol:note`, a newer rule that cannot coexist
+   with the old one (obeying either necessarily violates the other). Different
+   emphasis on the same topic is not a reversal.
+2. **The subject ceased to exist.** A rule about a module, format, command, or
+   flag that no longer appears anywhere. Nothing can comply with it and nothing
+   can break it, so it constrains nothing. This is the one deletion that
+   *requires* reading the source — and it is a question about the subject's
+   existence, never about whether the code obeys.
+
+Everything else survives. A rule can be old, unfashionable, inconvenient, or
+currently broken by the code, and still be in force.
+
+**Both rows still need approval, laws included.** `law.md` has no separate
+deletion path — it has the same two evidences plus the standing rule that you
+propose and the operator disposes.
 
 ## Procedure
 
@@ -101,6 +131,11 @@ Every other member is one of:
   migrations, "will do X" where X is now stated as done, `(deprecated)`
   annotations, dated diary entries stacked on one topic, `removed X on
   YYYY-MM-DD` tombstones.
+- **moot** — the subject is gone; nothing could obey or break it. *Evidence:
+  the name, and that it appears nowhere in the source.* See § When a rule may
+  be deleted.
+- **overturned** — the operator reversed it. *Evidence: the reversal — a
+  `**Supersedes**:` line, or a newer rule that cannot coexist with it.*
 - **violates-law** — contradicts `law.md`. Dead regardless of date.
 - **holds** — the survivor. Untouched, and **not** reported as noise.
 - **unplaceable** — no topic could be assigned, or two statements could not be
@@ -129,7 +164,7 @@ Grouped by file, evidence on every line:
 CLAUDE.md
   violates-law L43 "skip the failing test to unblock" — law.md:no-silent-debt
 promotions
-  .claude/notes/design-preferences.md L10  iron law "no silent debt" → law.md
+  .claude/notes/conventions.md L10  "never mutate a Frame in place" → law.md
 unplaceable
   .claude/notes/release.md L12  "signing key rotation" — no other statement on this topic, no date
 ```
@@ -142,9 +177,9 @@ before the user answers.
 
 ### 5. Apply
 
-- **superseded / violates-law / finished** — delete the statement. Section left
-  empty → delete the section. File left empty → delete the file and its
-  inbound links.
+- **superseded / violates-law / finished / moot / overturned** — delete the
+  statement. Section left empty → delete the section. File left empty → delete
+  the file and its inbound links.
 - **duplicate** — keep the canonical one; others become a one-line pointer, or
   nothing.
 - **promotion** — **move** into `law.md` under `<!-- mol:law:id:<slug> -->`,
@@ -183,9 +218,13 @@ No-op branch:
 
 ## Guardrails
 
-- **Never delete a law.** Dedupe and absorb only. Repeal is the operator's act
-  through `/mol:note`. A skill able to delete its own constraints has none.
+- **Never delete a law on your own judgment.** Dedupe and absorb freely;
+  deletion needs one of the two evidences in § When a rule may be deleted, and
+  even then you *propose* — the operator disposes. A skill able to retire its
+  own constraints has none.
 - **Never resolve two conflicting laws.** Report both and stop.
+- **Never treat inconvenience as obsolescence.** "This rule makes the diff
+  bigger" is the rule working.
 - **Never compact by age alone.** Recency breaks ties *within* a topic. Old and
   unopposed is current, not stale — "keep the newest N" would delete
   load-bearing knowledge and keep fresh mistakes.

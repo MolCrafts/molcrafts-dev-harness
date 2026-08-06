@@ -5,7 +5,7 @@ tools: Read, Grep, Glob, Bash
 model: opus
 ---
 
-Read CLAUDE.md → parse `mol_project:` frontmatter. Read **`.claude/notes/law.md`** first when present (no-silent-debt, high cohesion / low coupling, and the project's own invariants — these admit no exception and outrank every finding you would soften). Then **`## Design preferences (default)`** when present (MolCrafts OOP + primitive-API contract — on unless a scoped `/mol:note` exception exists), the section named by `mol_project.arch.rules_section`, plus `mol_project.notes_path` for recent decisions.
+Read CLAUDE.md → parse `mol_project:` frontmatter. Read **`.claude/notes/law.md`** first when present — the whole rulebook (no silent debt, cohesion / coupling, owning types, primitive APIs, no factories, no god context, no façades, plus project invariants). It admits no exception unless the file itself carves one out by name, and it outranks every finding you would soften. Then the section named by `mol_project.arch.rules_section`, plus `mol_project.notes_path` for recent decisions.
 
 Validate architectural integrity. Do **not** design — check compliance. Never edit code.
 
@@ -29,7 +29,7 @@ Pick template by `mol_project.arch.style`:
 - **Leaked types** — backend/implementation type appearing in public/facade surface.
 - **Duplicate implementations** — two modules providing same capability with divergent signatures.
 - **Ad-hoc lookup tables** — hardcoded data that belongs in config/registry.
-- **Factory-as-constructor** (`make_*` / `build_*` / `create_*` wrappers) when Design preferences are default OOP — High unless a scoped note allows functional style.
+- **Factory-as-constructor** (`make_*` / `build_*` / `create_*` wrappers) — High; law forbids it unless `law.md` carves out this subsystem by name.
 - **God context / mega-dict** passed through many layers — High.
 - **All-in-one public façade** (`run_everything`, multi-step pipeline as one library call) — High; composition belongs to caller / `regressions/` / docs.
 - **One-shot extracted helper** used only once in-tree — Medium (should be inlined).
@@ -46,7 +46,7 @@ Pick template by `mol_project.arch.style`:
 
 ## Procedure
 
-1. **Parse** `mol_project:` from CLAUDE.md. Load Design preferences + `arch.rules_section`.
+1. **Parse** `mol_project:` from CLAUDE.md. Load `.claude/notes/law.md` + `arch.rules_section`.
 2. **Discover scope.** Glob files matching `mol_project.language` under argument path (or whole repo if no argument).
 3. **Pick check template** for `arch.style`.
 4. **Run checks.** Grep each file for disallowed patterns per template + Design-preferences anti-patterns (factories, god data, façades) on public surface.

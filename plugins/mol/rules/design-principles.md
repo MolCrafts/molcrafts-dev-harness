@@ -72,15 +72,16 @@ Do not compensate with more integration tests.
 
 Enforced by: bootstrap managed section + `architect` (coupling /
 isolation anti-patterns) + `tester` (unit scope = one module) +
-`implementer` / `spec-writer` (Design preferences).
+`implementer` / `spec-writer` (law.md).
 
 ### 0.3 Law is a category, not an adjective
 
 `.claude/notes/law.md` holds the rules that admit **no** exception —
 § 0.1, § 0.2, "`tests/` holds unit tests only", and each project's own
 invariants (public APIs, on-disk formats, wire contracts).
-`.claude/notes/design-preferences.md` holds everything the operator *can*
-override for a named subsystem.
+There is **no second tier**: a project does not carry "overridable defaults"
+an agent may set aside on its own reading of the situation. A carve-out exists
+only where `law.md` itself names the exempt subsystem.
 
 **A law is a concrete prohibition**, not a sentiment: it names the thing
 that must never happen and where. *"Never write an e2e test under
@@ -88,11 +89,20 @@ that must never happen and where. *"Never write an e2e test under
 nothing can violate it. If you cannot state what a violation looks like,
 it is a preference at best.
 
-The split exists so compaction has a fixed point: `/mol:compact` resolves
-every harness conflict against `law.md` first and may absorb into it, but
-may never delete from it. A skill able to delete its own constraints has
-none. Adding, changing, or repealing a law is the operator's act, stated
-as such, through `/mol:note`.
+This gives compaction a fixed point: `/mol:compact` resolves every harness
+conflict against `law.md` first, and may not retire a law on its own
+judgment. A skill able to delete its own constraints has none.
+
+A rule dies only two ways, and neither is a judgment call:
+
+- **overturned** — the operator reversed it, on record.
+- **moot** — the thing it governed no longer exists, so nothing can
+  comply with it or break it.
+
+Not obsolescence: a rule the code currently violates. That is debt, and
+deleting it would launder the violation into a decision. Age is not
+obsolescence either — old and unopposed is in force. Both deletions are
+proposed to the operator, never applied unilaterally.
 
 ## 1. Four-Zone Layering
 
@@ -168,7 +178,7 @@ layout.
   ≤ ~60). It answers: *what is this repo?*, *where do things live?*,
   *what is law?*, *what is the default workflow?* — **one line per
   rule**, linking to `.claude/notes/law.md` and
-  `.claude/notes/design-preferences.md` for the bodies. It links to
+  `.claude/notes/law.md` for the bodies. It links to
   files; it does not embed them. Over budget is almost always inlined
   rule prose — promote it and leave the one-liner.
 

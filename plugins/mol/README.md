@@ -109,7 +109,7 @@ reach for it, and a one-line example.
 
 | Skill | What | When | Example |
 |---|---|---|---|
-| `/mol:bootstrap` | Initialize or maintain the agent harness. Writes `.claude/notes/law.md` — the **inviolable** rules (**no silent debt**; **high cohesion, low coupling**; plus the project's own invariants) — and `.claude/notes/design-preferences.md` for the **overridable** ones (OOP, no factories, no god data, no all-in-one APIs, tests-mirror-src). CLAUDE.md indexes both, one line per rule, and stays ≤ ~100 lines. Three paths: create / audit+repair / no-op. Never writes project source; never rewords a law. | First time in a project; after upgrading mol; when harness has drifted. | `/mol:bootstrap` |
+| `/mol:bootstrap` | Initialize or maintain the agent harness. Writes `.claude/notes/law.md` — **the** rules file, every rule a concrete prohibition (no silent debt; high cohesion / low coupling; never an e2e under `tests/`; never a free function where a type owns the concept; no factories, god context, or façades; plus the project's own invariants). No second overridable tier — a carve-out exists only where `law.md` names the exempt subsystem. CLAUDE.md indexes it one line per law and stays ≤ ~100 lines. Three paths: create / audit+repair / no-op. Never writes project source; never rewords a law. | First time in a project; after upgrading mol; when harness has drifted. | `/mol:bootstrap` |
 
 ### 1 — Plan & specify
 
