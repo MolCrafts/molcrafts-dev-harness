@@ -12,6 +12,9 @@ Read CLAUDE.md → parse `mol_project:` (`$META`).
 
 **Not a diary.** One live rule per topic; git is the archive. Every run: reconcile → clean → place → rewrite.
 
+Scope is the topic you name. Sweeping every *other* claim in the harness for
+drift is `/mol:compact`.
+
 ## Write surface
 
 | Edit | Never |
