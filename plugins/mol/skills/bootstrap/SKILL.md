@@ -353,9 +353,11 @@ may weaken or delete one, `/mol:compact` included.
 
 - **No silent debt.** Rot you touch gets fixed or hard-stops the work; never skip-marked, never left silent in the summary.
 - **High cohesion, low coupling.** One job per module; deps through explicit seams. A unit is green via `$META.build.test_single` alone — if it needs the full suite, a sibling module's real implementation, or external processes, the design is wrong.
+- **`tests/` is unit tests only.** Never an e2e or full-stack scenario under `tests/` — those go to `regressions/` or the integration harness.
 
 <add project invariants here — public APIs, on-disk formats, contracts that need
-a deliberate decision to break. One line each; body goes in law.md>
+a deliberate decision to break. Concrete prohibitions, one line each; body goes
+in law.md>
 
 ## Design preferences (default)
 
@@ -454,7 +456,22 @@ sibling modules' real implementations, the full app, network, or external
 processes → the design is too coupled. **Stop**, split the boundary, inject the
 dependency, or route `/mol:refactor`. Do not "fix it with more integration tests."
 
-<!-- add project invariants below, one `<!-- mol:law:id:<slug> -->` each -->
+<!-- mol:law:id:tests-unit-only -->
+## `tests/` holds unit tests only
+
+**Never write an e2e or full-stack scenario under `tests/`.** `tests/` mirrors
+source path-for-path, one module per file, single-function tests, fakes for
+outbound deps. Public-API and end-to-end scenarios go to `regressions/` (with
+hard-coded goldens) or the project's own integration / browser harness.
+
+One e2e file under `tests/` breaks the unit gate for every module it touches:
+`$META.build.test_single` stops being a statement about one module, and § high
+cohesion, low coupling becomes unenforceable.
+
+<!-- add project invariants below, one `<!-- mol:law:id:<slug> -->` each.
+     Laws are concrete prohibitions, not sentiments: name the thing that must
+     never happen and where. "Never write e2e under tests/" is a law;
+     "write good tests" is not. -->
 ```
 
 ---
@@ -509,10 +526,10 @@ your own.
 
 ## Tests
 
-Unit tests **only** under `tests/`, path mirrors source, types mirror types.
-Single-function tests; no e2e under `tests/`. One module → its mirrored tests
-only. Public-API scenarios → `regressions/` with hard-coded goldens.
-Details: `tester` agent.
+Layout: `tests/` mirrors source path-for-path, types mirror types
+(`FooClass` → `TestFooClass`), single-function tests, one module → its own
+mirrored tests. What may **not** live there is law, not preference —
+`law.md` § `tests/` holds unit tests only. Details: `tester` agent.
 ```
 
 ---

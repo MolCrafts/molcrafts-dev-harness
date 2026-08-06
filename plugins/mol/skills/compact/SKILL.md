@@ -15,13 +15,21 @@ that same reconcile across **every** topic at once, leaving one live statement
 per topic. Every skill writes into the harness; this is the only one that
 sweeps it.
 
-**Reads the harness, not the repo.** Whether a note still matches the code is
-`/mol:map` (blueprint) and `/mol:note` (one rule). Evidence here is internal:
-what the law says, what was written last, what is said twice, what is finished.
+**Compacts the harness; consults the code.** The write surface is harness-only.
+But which of two competing requirements is the *current* one is usually only
+visible in the source — so when a topic holds conflicting statements, read the
+code that would obey them and let it break the tie.
+
+This is **not** an audit of the repo. You never enumerate paths or symbols to
+fact-check the harness; that is `/mol:map`, and it produces different findings.
+You read only as much source as it takes to decide which requirement is in
+force.
 
 ## Surface
 
-| Compact | Never |
+Project source is **read-only evidence** — consult it, never edit it.
+
+| Write | Never write |
 |---|---|
 | `.claude/notes/law.md` — **dedupe and absorb only, never delete** | Project source, tests, public `docs/`, public `README.md` |
 | `CLAUDE.md`, `AGENTS.md` / `AGENT.md` (preserve `mol_project:`) | Spec **bodies** — INDEX rows and done-spec flagging only |
@@ -34,15 +42,26 @@ what the law says, what was written last, what is said twice, what is finished.
 Every conflict resolves down this list — never by file size, never by which
 file you happened to read first.
 
-1. **law** — `.claude/notes/law.md`. Outranks everything. A harness statement
-   contradicting a law is dead on sight, whatever its date.
-2. **newest** — the later-written statement wins. Recency comes from git
-   (`git log -1 --format=%ad -- <file>`, `git blame -L<n>,<n>` for a line), not
-   from how a sentence sounds. Untracked or uncommitted → treat as newest.
-3. **closest to enforcement** — a rule stated where it is executed beats the
+1. **law** — `.claude/notes/law.md`. Outranks everything, the code included. A
+   harness statement contradicting a law is dead on sight, whatever its date.
+   Code contradicting a law is **rot**, never a repeal.
+2. **the code, between competing statements** — when a topic holds two or more
+   conflicting requirements, the one the source actually follows is the current
+   one. Open the files that would obey each and look. A rule the codebase has
+   already adopted outranks the one nobody implemented.
+3. **git recency** — when the code cannot disambiguate (process rules,
+   conventions with no code footprint, two rules both unimplemented), the
+   later-written statement wins. `git log -1 --format=%ad -- <file>`,
+   `git blame -L<n>,<n>` for a line — not how a sentence sounds. Untracked or
+   uncommitted → treat as newest.
+4. **closest to enforcement** — a rule stated where it is executed beats the
    same rule retold in prose somewhere else.
 
 Two **laws** in conflict is not yours to resolve: report both and stop.
+
+One statement with **no competitor** never reaches this ladder. Rule 2 breaks
+ties; it does not retire an uncontested rule the code happens to violate — see
+§ Guardrails.
 
 ## Procedure
 
@@ -73,7 +92,8 @@ Exactly one member of each cluster survives, chosen by § Order of authority.
 Every other member is one of:
 
 - **superseded** — same topic, contradicted by the survivor. *Evidence: both
-  path:line, and which is newer.*
+  path:line, plus which witness decided it — the source file that follows the
+  survivor, or the two dates.*
 - **duplicate** — same topic, agrees with the survivor. *Evidence: the location
   list.* Canonical home per `/mol:note` § 5; the rest become a one-line pointer
   or nothing.
@@ -88,6 +108,9 @@ Every other member is one of:
 
 Also collect, without deleting:
 
+- **uncontested but unmet** — a rule with no competitor that the source does
+  not follow. **Not stale.** It is debt, or a requirement not yet implemented.
+  Report it as a compliance gap with a route (`/mol:debug` / `/mol:refactor`).
 - inviolable-sounding rules living outside `law.md` → **promotion** candidates (§ 5)
 - `status: done` specs still on disk → flag; deletion belongs to `/mol:close`
 - INDEX rows with no file, files with no INDEX row
@@ -144,7 +167,9 @@ holding two survivors is a bug in the apply, not leftover rot.
 ### 7. Report
 
 Files touched, per-bucket counts, size table before → after, unplaceable list
-verbatim, promotions applied, specs flagged for `/mol:close`.
+verbatim, promotions applied, specs flagged for `/mol:close`, and the
+**compliance gaps** — uncontested rules the source does not follow, each with a
+route. Those are debt you surfaced, not compaction; never silently omitted.
 
 ```
 /mol:compact: 7 superseded, 3 duplicates, 2 finished across 5 files; 612 → 431 lines; 1 promoted to law
@@ -164,8 +189,14 @@ No-op branch:
 - **Never compact by age alone.** Recency breaks ties *within* a topic. Old and
   unopposed is current, not stale — "keep the newest N" would delete
   load-bearing knowledge and keep fresh mistakes.
-- **Never read project source to justify a deletion.** Out of scope by design;
-  `/mol:map` owns repo truth.
+- **Code non-compliance is never a repeal.** An uncontested rule the source
+  violates is debt, not a dead rule — keep it and report the gap. Deleting
+  rules the code breaks would launder every violation into a decision, and the
+  harness would converge on describing whatever the code already does. Rule 2
+  breaks ties **between competing requirements**; it never retires a lone one.
+- **Never audit the repo.** Read source to decide which of two requirements is
+  in force — never to fact-check a claim's paths, symbols, or counts. That is
+  `/mol:map`'s job and it yields different findings.
 - **Never delete a long user-authored note for being long.** Long and unopposed
   is a split candidate.
 - **Never touch project source, tests, `docs/`, public `README.md`, or spec bodies.**

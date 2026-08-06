@@ -77,9 +77,16 @@ isolation anti-patterns) + `tester` (unit scope = one module) +
 ### 0.3 Law is a category, not an adjective
 
 `.claude/notes/law.md` holds the rules that admit **no** exception —
-§ 0.1, § 0.2, and each project's own invariants (public APIs, on-disk
-formats, wire contracts). `.claude/notes/design-preferences.md` holds
-everything the operator *can* override for a named subsystem.
+§ 0.1, § 0.2, "`tests/` holds unit tests only", and each project's own
+invariants (public APIs, on-disk formats, wire contracts).
+`.claude/notes/design-preferences.md` holds everything the operator *can*
+override for a named subsystem.
+
+**A law is a concrete prohibition**, not a sentiment: it names the thing
+that must never happen and where. *"Never write an e2e test under
+`tests/`"* is a law. *"Write good tests"* is not — it forbids nothing, so
+nothing can violate it. If you cannot state what a violation looks like,
+it is a preference at best.
 
 The split exists so compaction has a fixed point: `/mol:compact` resolves
 every harness conflict against `law.md` first and may absorb into it, but

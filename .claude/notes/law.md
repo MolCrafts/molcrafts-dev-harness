@@ -8,6 +8,26 @@ Adding, changing, or repealing a law is the operator's act via `/mol:note`. No
 skill deletes from this file — `/mol:compact` may dedupe and absorb into it,
 nothing more.
 
+<!-- mol:law:id:no-silent-debt -->
+## No silent debt
+
+Discover an anti-pattern, failing test, broken invariant, or clear bug in the
+surface you touch or depend on → **prioritize or hard-stop**. Never ignore it as
+"pre-existing", never skip-mark, never weaken an assert, never land work on top
+of known rot. Fix it now if local and stage-allowed; otherwise stop, report
+path:line, and route `/mol:debug` / `/mol:refactor` / supersede.
+
+**Name it in the summary** — found, fixed, or blocking. Silence is a process
+failure. This outranks "stay in scope" and "minimal diff".
+
+<!-- mol:law:id:tests-unit-only -->
+## `tests/` holds unit tests only
+
+**Never write an e2e or full-stack scenario under `tests/`.** Here that means
+the Codex/Claude install smoke stays in the `check` skill; `tests/` holds only
+the stdlib structural guards, each runnable standalone via `python3 tests/<f>.py`
+exactly as pre-commit and CI invoke them.
+
 <!-- mol:law:id:dual-manifest-parity -->
 ## Dual-manifest parity
 
