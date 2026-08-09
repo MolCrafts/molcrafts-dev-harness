@@ -10,6 +10,14 @@ boundaries (public docs / passive internal context / runtime + active
 artifacts / thin router) so the next agent that walks in succeeds
 without re-deriving the rules.
 
+**This marketplace is developer tooling only.** It ships exactly one plugin,
+`mol` — the code-project harness. Product capabilities are MCP tools on
+[molmcp](https://github.com/MolCrafts/molmcp), not skills here: job queues are
+the `molq` plane (`list_jobs`, `submit_job`, …) and experiment-data workspaces
+are the `molexp` plane (`plan_adoption`, `run_adoption`, `adoption_status`,
+`ingest_metrics`). Agents call those tools directly; there is no slash command
+in between and no prompt re-deriving what a tool already does.
+
 ## Layout
 
 ```
@@ -18,30 +26,20 @@ molcrafts-harness/
 ├── .claude-plugin/marketplace.json   # marketplace registry
 ├── .agents/plugins/marketplace.json  # native Codex marketplace registry
 ├── plugins/
-│   ├── mol/                          # workflow skills + single-axis agents (counts live in marketplace.json)
-│   │   ├── .claude-plugin/plugin.json
-│   │   ├── .codex-plugin/plugin.json
-│   │   ├── README.md
-│   │   ├── rules/
-│   │   │   ├── claude-md-metadata.md # mol_project frontmatter contract
-│   │   │   ├── design-principles.md  # harness layering + design rules
-│   │   │   ├── agent-design.md       # producer/reviewer split rationale
-│   │   │   ├── model-policy.md       # conversation modes + agent model tiers
-│   │   │   ├── evaluator-protocol.md # planner/generator/evaluator contract
-│   │   │   ├── large-spec-split.md   # auto-split rule for oversized specs
-│   │   │   └── stage-policy.md       # mol_project.stage behavior matrix
-│   │   ├── skills/                   # shared Claude/Codex skills + one CODEX.md runtime adapter
-│   │   └── agents/                   # one .md per agent (incl. librarian, implementer, spec-writer)
-│   ├── molexp/                       # molexp data-workspace skills (adopt-workspace)
-│   │   ├── .claude-plugin/plugin.json
-│   │   ├── .codex-plugin/plugin.json
-│   │   ├── README.md
-│   │   └── skills/
-│   └── molq/                         # molq job lifecycle via molmcp (jobs/submit/cancel)
+│   └── mol/                          # workflow skills + single-axis agents (counts live in marketplace.json)
 │       ├── .claude-plugin/plugin.json
 │       ├── .codex-plugin/plugin.json
 │       ├── README.md
-│       └── skills/
+│       ├── rules/
+│       │   ├── claude-md-metadata.md # mol_project frontmatter contract
+│       │   ├── design-principles.md  # harness layering + design rules
+│       │   ├── agent-design.md       # producer/reviewer split rationale
+│       │   ├── model-policy.md       # conversation modes + agent model tiers
+│       │   ├── evaluator-protocol.md # planner/generator/evaluator contract
+│       │   ├── large-spec-split.md   # auto-split rule for oversized specs
+│       │   └── stage-policy.md       # mol_project.stage behavior matrix
+│       ├── skills/                   # shared Claude/Codex skills + one CODEX.md runtime adapter
+│       └── agents/                   # one .md per agent (incl. librarian, implementer, spec-writer)
 ├── scripts/                          # LLM-free repo tooling (CI-callable)
 │   ├── validate_repository.py        # deterministic dual-manifest validator
 │   └── bump_version.py               # release version bump across all manifests
@@ -59,8 +57,17 @@ molcrafts-harness/
 | Plugin | Purpose |
 |---|---|
 | [`mol`](plugins/mol/README.md) | Day-to-day **code** project work (planner→generator→evaluator harness): bootstrap, spec, impl, review, git chain, …. Adapts via `mol_project:` frontmatter. |
-| [`molexp`](plugins/molexp/README.md) | **Experiment data** workspace tooling: `/molexp:adopt-workspace` lifts legacy result folders into molexp's Workspace→Project→Experiment→Run layout. |
-| [`molq`](plugins/molq/README.md) | **Job queue** via molmcp: `/molq:jobs` (list/status/logs/queue), `/molq:submit`, `/molq:cancel` (submit/cancel need `MOLMCP_MOLQ_SUBMIT=1`). |
+
+One plugin, on purpose. A skill earns its place when the *procedure* is the
+hard part — deciding, sequencing, gating. Driving a queue or copying a
+directory is not that: it is work a tool does better, with real preconditions
+and a real return value instead of a prompt hoping the model follows steps.
+Those live in molmcp:
+
+| Was | Is now |
+|---|---|
+| `/molq:jobs`, `/molq:submit`, `/molq:cancel` | `molmcp serve molq` → `list_jobs`, `get_job`, `job_logs`, `list_destinations`, `list_queue`, `submit_job`, `cancel_job` |
+| `/molexp:adopt-workspace` | `molmcp serve molexp` → `plan_adoption`, `run_adoption`, `adoption_status`, `ingest_metrics` |
 
 Maintaining the marketplace itself is not a plugin: this repo is a `mol*`
 project (`CLAUDE.md`) with project-local skills in `.claude/skills/`
@@ -75,9 +82,11 @@ repo.
 ```
 /plugin marketplace add https://github.com/MolCrafts/molcrafts-harness
 /plugin install mol@molcrafts
-/plugin install molexp@molcrafts   # optional — experiment data workspaces
-/plugin install molq@molcrafts     # optional — job queue via molmcp
 ```
+
+For job queues and experiment-data workspaces, connect the molmcp planes
+instead — `molmcp client claude -o ~/.claude.json` writes the config for all
+of them.
 
 For local development, `/plugin marketplace add <path-to-this-checkout>`
 works too. Restart the session or `/reload-plugins` to pick up new

@@ -28,11 +28,12 @@ A skill or agent that prescribes ten exact steps is brittle. A skill
 that names three principles and trusts the agent to apply them is
 durable. Prefer the second.
 
-### 0.1 Project iron law — no silent debt
+### 0.1 Project law — no silent debt
 
-Bootstrapped projects ship this in CLAUDE.md under Design preferences.
-It is a **product** iron law for every MolCrafts repo, not optional
-style:
+Bootstrapped projects ship this in `.claude/notes/law.md`, indexed from
+CLAUDE.md under `## Law (never violated)`. It is a **law** for every
+MolCrafts repo, not an overridable preference — and no skill may delete
+it, `/mol:compact` included:
 
 - Discovering an anti-pattern, pre-existing failure, or broken
   invariant in the working surface → **prioritize fix or hard-stop
@@ -46,11 +47,10 @@ Skills that snapshot "pre-existing red" for *their own* regression
 gates (e.g. `/mol:simplify`) must still **surface** those failures as
 priority debt and must not treat silence as success.
 
-### 0.2 Project iron law — high cohesion, low coupling
+### 0.2 Project law — high cohesion, low coupling
 
-Also shipped under CLAUDE.md `## Design preferences (default)`, next
-to the OOP defaults. **Every module** (file / type / package) in a
-MolCrafts product is constrained:
+Also shipped in `.claude/notes/law.md`. **Every module** (file / type /
+package) in a MolCrafts product is constrained:
 
 - **High cohesion** — one clear responsibility per module; split when
   a unit accumulates more than one coherent job.
@@ -72,7 +72,37 @@ Do not compensate with more integration tests.
 
 Enforced by: bootstrap managed section + `architect` (coupling /
 isolation anti-patterns) + `tester` (unit scope = one module) +
-`implementer` / `spec-writer` (Design preferences).
+`implementer` / `spec-writer` (law.md).
+
+### 0.3 Law is a category, not an adjective
+
+`.claude/notes/law.md` holds the rules that admit **no** exception —
+§ 0.1, § 0.2, "`tests/` holds unit tests only", and each project's own
+invariants (public APIs, on-disk formats, wire contracts).
+There is **no second tier**: a project does not carry "overridable defaults"
+an agent may set aside on its own reading of the situation. A carve-out exists
+only where `law.md` itself names the exempt subsystem.
+
+**A law is a concrete prohibition**, not a sentiment: it names the thing
+that must never happen and where. *"Never write an e2e test under
+`tests/`"* is a law. *"Write good tests"* is not — it forbids nothing, so
+nothing can violate it. If you cannot state what a violation looks like,
+it is a preference at best.
+
+This gives compaction a fixed point: `/mol:compact` resolves every harness
+conflict against `law.md` first, and may not retire a law on its own
+judgment. A skill able to delete its own constraints has none.
+
+A rule dies only two ways, and neither is a judgment call:
+
+- **overturned** — the operator reversed it, on record.
+- **moot** — the thing it governed no longer exists, so nothing can
+  comply with it or break it.
+
+Not obsolescence: a rule the code currently violates. That is debt, and
+deleting it would launder the violation into a decision. Age is not
+obsolescence either — old and unopposed is in force. Both deletions are
+proposed to the operator, never applied unilaterally.
 
 ## 1. Four-Zone Layering
 
@@ -87,7 +117,7 @@ poisons future agents because they cannot tell what they are reading.
 ┌──────────────────────────────────────────────────────────────────────┐
 │  .claude/  (everything Claude Code & mol read at the project level)  │
 │                                                                      │
-│   .claude/notes/    passive internal context (mol): notes,           │
+│   .claude/notes/    passive internal context (mol): law.md, notes,   │
 │                     architecture.md, decisions, contracts, handoffs, │
 │                     rubrics, debt, open questions. Outlives features.│
 │                                                                      │
@@ -144,12 +174,13 @@ layout.
   the active/passive contract that `/mol:impl`'s deletion behavior
   depends on.
 
-- **L3.** `CLAUDE.md` is a short router (≤ ~150 lines is a good
-  budget). It answers: *what is this repo?*, *where do things live?*,
-  *what must never change casually?*, *what is the default workflow?*
-  It links to files; it does not embed them. A CLAUDE.md that grows
-  past two screens is a smell — promote sections to `.claude/notes/`
-  and link.
+- **L3.** `CLAUDE.md` is a short router (**≤ ~100 lines**, managed body
+  ≤ ~60). It answers: *what is this repo?*, *where do things live?*,
+  *what is law?*, *what is the default workflow?* — **one line per
+  rule**, linking to `.claude/notes/law.md` and
+  `.claude/notes/law.md` for the bodies. It links to
+  files; it does not embed them. Over budget is almost always inlined
+  rule prose — promote it and leave the one-liner.
 
 - **L4.** Specs are alive. `/mol:spec` writes them under
   `.claude/specs/` with a checkbox-tracked Tasks section. `/mol:impl`

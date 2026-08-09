@@ -27,9 +27,9 @@ Does not require existing `mol_project:` frontmatter — this is the tool that c
 ```
 docs/                    public-facing documentation
 .claude/                 (canonical Claude Code project folder)
-  notes/                 passive internal context — notes, architecture.md,
-                         decisions, contracts, handoffs, rubrics, debt,
-                         open questions. Outlives features.
+  notes/                 passive internal context — law.md, notes,
+                         architecture.md, decisions, contracts, handoffs,
+                         rubrics, debt, open questions. Outlives features.
   specs/                 active runtime artifacts — alive, ticked off as
                          /mol:impl works, deleted on completion.
   agents/, skills/,      Claude Code's own runtime configuration.
@@ -93,6 +93,8 @@ Smallest set that gives this repo a useful harness. Reasonable defaults:
 
 - thin `CLAUDE.md` (router) — always
 - `.claude/notes/README.md` — explains directory
+- `.claude/notes/law.md` — **the** rules file; CLAUDE.md indexes it one line
+  per law. There is no second, overridable tier.
 - `.claude/notes/notes.md` — passive memory, `/mol:note` writes here
 - `.claude/specs/` (empty dir) — `/mol:spec` writes here
 - `.claude/notes/architecture.md` stub (one line: `> 跑 /mol:map 填充本蓝图` / "run /mol:map to populate this blueprint") — `librarian` consumes during `/mol:spec` Step 4.5; populated by `/mol:map`, not bootstrap
@@ -152,13 +154,21 @@ Condensed from `rules/design-principles.md`. Focus on structural drift; skip con
 - `docs/` — only public-user content? Flag agent contracts / handoffs / specs under `docs/`.
 - `.claude/notes/` — free of specs? Free of public-user prose?
 - `.claude/` — any loose `.md` files at root? (Always a smell.)
-- `CLAUDE.md` — line-count it. ≤ ~150 lines soft budget. Flag if it embeds large rule sets.
-- **Design preferences** — managed section should include
-  `## Design preferences (default)` (OOP / no factories / no god data /
-  no all-in-one API) **and** both iron-law subsections:
-  **no silent debt** + **high cohesion, low coupling** (unit tests
-  isolate the module; no full-suite to green a unit). Missing when
-  mol contract is opted-in → 🟡 repair via managed-section refresh.
+- `CLAUDE.md` — line-count it. **≤ ~100 lines**; the managed body ≤ ~60 of
+  them. Over budget is almost always inlined rule prose — flag 🟡 and name
+  the section to move to `.claude/notes/`.
+- **Law** — `.claude/notes/law.md` must exist and hold every rule, one
+  `<!-- mol:law:id:<slug> -->` marker each, with `## Law (never
+  violated)` in CLAUDE.md as its one-line-per-law index. Missing file →
+  🟡. A rule stated **only** outside `law.md` (a surviving
+  `design-preferences.md`, an absolute in `notes.md`) → 🟡 promote; the
+  body moves, CLAUDE.md keeps the one-liner. **Rule prose inlined in
+  CLAUDE.md → 🟡**: move it, leave the one-liner. Never demote or reword
+  a law during repair.
+- **No second rules tier** — a `## Design preferences (default)` section
+  or a surviving `.claude/notes/design-preferences.md` is 🟡: fold its
+  rules into `law.md` as prohibitions (see migration table). Agents may
+  not be handed two rulebooks of differing force.
 
 For projects with `mol_project:` frontmatter:
 - `specs_path` → under `.claude/specs/`. Flag if `docs/`, `.claude/notes/`, or bare `.claude/`.
@@ -277,7 +287,7 @@ Verify result satisfies layering rules:
 - `docs/` (if exists) — only public-user content (no specs, contracts, rubrics)
 - `.claude/notes/` (if created/modified) — only passive internal context (no public-user prose, no specs)
 - `.claude/` — only behavior (skills/agents/hooks/settings) and active artifacts (`specs/`)
-- `CLAUDE.md` — thin router (≤ ~150 lines), points rather than embeds
+- `CLAUDE.md` — thin router (≤ ~100 lines, managed body ≤ ~60), points rather than embeds
 - nothing overwritten without approval
 
 For create path: verify all layering rules pass.
@@ -301,9 +311,13 @@ End with one-line summary.
 ## CLAUDE.md template (router)
 
 Managed body is the **default MolCrafts project contract**. Re-running
-bootstrap refreshes everything between the markers (including Design
-preferences). Project-specific overrides go **outside** the markers, or
-via `/mol:note` with an explicit functional-style exception.
+bootstrap refreshes everything between the markers. Project-specific overrides
+go **outside** the markers, or via `/mol:note` with an explicit
+functional-style exception.
+
+**CLAUDE.md is an index, not the rulebook.** One line per rule; the full text
+lives in `.claude/notes/law.md`, which bootstrap writes on the create path. A managed body that grows past ~60 lines has stopped being a
+router — move the prose to notes and leave the pointer.
 
 ```markdown
 # CLAUDE.md
@@ -326,111 +340,27 @@ via `/mol:note` with an explicit functional-style exception.
 - Claude Code runtime config (agents, skills, hooks, settings):
   `.claude/agents/`, `.claude/skills/`, `.claude/hooks/`, `.claude/settings.json`
 
-## Design preferences (default)
+## Law (never violated)
 
-**Default for all MolCrafts projects.** Apply unless the operator
-**explicitly** requires a functional (or other) style for a named
-subsystem — then capture the exception with `/mol:note` and scope it.
-Do **not** invent a functional style on your own.
+Full text: `.claude/notes/law.md`. Outranks scope, minimal-diff, and
+convenience. There are no overridable defaults — a carve-out exists only if the
+operator wrote one into `law.md` naming the subsystem. An agent never grants
+itself one. CLAUDE.md carries **one line per law**; it is an index, not the
+rulebook.
 
-### Iron law — no silent debt (all projects)
+- **No silent debt.** Rot you touch gets fixed or hard-stops the work; never skip-marked, never left silent in the summary.
+- **High cohesion, low coupling.** One job per module; deps through explicit seams. A unit is green via `$META.build.test_single` alone — if it needs the full suite, a sibling module's real implementation, or external processes, the design is wrong.
+- **Never an e2e under `tests/`.** `tests/` mirrors source, one module per file; end-to-end scenarios go to `regressions/` or the integration harness.
+- **Never a free function where a type owns the concept.** Methods on types; module-level only for genuinely free operations or thin re-exports.
+- **Never more than one concern in a public method.** Construct → configure → one concern → read result.
+- **Never extract a helper with one call site.** Inline until a second real use, or until a unit test must target it.
+- **Never a `make_*` / `build_*` / `create_*` wrapper as the primary constructor.** `Foo(...)` constructs; alternate constructors only with distinct semantics (`Foo.from_file`).
+- **Never a god context bag.** Pass the fields the call needs.
+- **Never an all-in-one façade.** Composition is the caller's job.
 
-Discover anti-pattern / failing test / broken invariant / clear bug
-in the surface you touch or depend on → **prioritize or hard-stop**:
+<add project invariants here — public APIs, on-disk formats, wire contracts.
+Concrete prohibitions, one line each; body goes in law.md>
 
-1. **Do not ignore** ("pre-existing, leave it"), skip-mark, weaken
-   asserts, or land features on known rot.
-2. **Fix now** if local + stage-allowed; else **stop**, report
-   path:line, route `/mol:debug` / `/mol:refactor` / supersede.
-3. **Name it** in the summary (found / fixed / blocking). Silence = process failure.
-
-Outranks "stay in scope" / "minimal diff" when those mean knowingly
-leaving rot you already saw.
-
-### Iron law — high cohesion, low coupling (all modules)
-
-**Every module** (file / type / package) is a self-contained unit.
-This is a **product** iron law for all MolCrafts code — not optional
-style. It applies to every file, not only "important" ones.
-
-- **High cohesion** — one clear responsibility; everything in the
-  module serves that responsibility. Split when a unit accumulates
-  more than one coherent job.
-- **Low coupling** — depend only on narrow, explicit interfaces
-  (constructor args, method params, small protocols/traits). No
-  reach-through into other modules' internals; no ambient god
-  context; no hidden global registries required to exercise the unit.
-
-**Unit-test consequence (hard):** proving a module works uses **only
-that module's unit tests** under `tests/` (path mirrors the module),
-with fakes/stubs for outbound deps. The unit-test loop is
-`$META.build.test_single` on the mirrored path — **not** full-suite
-and **not** cross-module regression. Full suite (`$META.build.test`)
-and `regressions/` are CI / public-API nets; they are **not** how you
-green a unit during design or implementation.
-
-If a change "only works when the whole suite runs", or a unit test
-must boot sibling modules' real implementations / the full app /
-network / external processes → the design is too coupled. **Stop**,
-split the boundary, inject the dependency, or route `/mol:refactor`.
-Do not "fix it with more integration tests."
-
-### Prefer
-
-- **OOP by default.** Domain concepts are types with methods
-  (`NeighborList.build`, `ForceField.energy`), not free-floating
-  helpers. Module-level functions only for true free operations (pure
-  math with no natural owner) or thin package re-exports.
-- **Primitive, single-responsibility public APIs.** Callers compose:
-  construct → configure → one concern → read result. Each public
-  method does one named thing.
-- **Inline until the second real use.** A helper used in exactly one
-  place stays inline (or a private method on the owning type). Extract
-  only at a second call site, or when a unit test must target that unit.
-- **Testable-in-isolation boundaries.** Dependencies enter through
-  explicit seams (params, interfaces) so the unit can be exercised
-  with fakes. A module you cannot unit-test without its real graph
-  is unfinished design.
-
-### Forbid
-
-- **Factory functions as the primary constructor story.** No
-  `make_foo` / `build_bar` / `create_*` wrappers around construction.
-  Prefer `Foo(...)`. Explicit alternate constructors only when they
-  have distinct semantics (`Foo.from_file`, `Foo.empty`) — not
-  `make_foo` aliases of `__init__`.
-- **God data structures.** No mega-dict / mega-struct / ambient
-  "context" blob every layer reaches into. Pass the few fields a call
-  needs, or a narrow typed view. Split types that accumulate more
-  than one coherent responsibility.
-- **All-in-one façade APIs.** No public `run_everything` /
-  `compute_all` / `pipeline` that hides multi-step work. Composition
-  is the **caller's** job (scripts, docs examples, `regressions/`).
-  The library exposes primitives only.
-- **Coupling that forces full-graph testing.** No hidden cross-module
-  state, import-time side effects, or hard-wired concrete
-  collaborators that make `$META.build.test_single` on the module's
-  own tests insufficient.
-
-### Shape check (before adding a public symbol)
-
-1. Natural owning type? → method on that type, not a free function.
-2. More than one user-visible step? → split into primitives.
-3. Only one in-tree call site? → do not extract.
-4. Tempted to hang another field on a "context" bag? → new parameter
-   or smaller type instead.
-5. Can this unit's tests pass via `test_single` with fakes only?
-   If no → redesign the seam before coding.
-
-### Tests (default)
-
-- Unit tests **only** under `tests/`, path mirrors source
-  (`src/foo/boo.py` → `tests/test_foo/test_boo.py`), types mirror
-  (`FooClass` → `TestFooClass`). Single-function tests — no e2e under
-  `tests/`. **One module → its mirrored tests only**; unit green does
-  not require full suite. Public-API scenarios → `regressions/` with
-  **hard-coded** goldens (no live third-party oracles). Details:
-  `tester` agent.
 
 ## Default workflow
 
@@ -440,17 +370,161 @@ For non-trivial work, prefer:
 3. review (`/mol:review`)
 4. capture decisions (`/mol:note` — harness sync, not append-only)
 
-## What must never change casually
-
-<list invariants, public APIs, on-disk formats, contracts requiring a deliberate decision to break>
-
 <!-- mol:bootstrap:managed end -->
 
 <!-- Free-form additions below this line are preserved across re-runs.
      If a section grows past a screen, promote to .claude/notes/<topic>.md. -->
 ```
 
-If user opts into `mol` plugin contract: prepend `mol_project:` YAML per `rules/claude-md-metadata.md`; route body references to chosen `notes_path` and `specs_path`. Set `arch.rules_section: "## Design preferences (default)"` unless the project already has a richer Architecture heading (then point `rules_section` at that heading **and** keep Design preferences in the managed body — agents always load Design preferences when present). Default `stage: experimental` (right answer pre-1.0; per `rules/stage-policy.md` allowed values are `experimental`, `beta`, `stable`, `maintenance`). If Step 1 found `1.x.y` on disk (`pyproject.toml` / `Cargo.toml` / `package.json`), surface and ask whether `stable` instead — still default `experimental` if no pick.
+If user opts into `mol` plugin contract: prepend `mol_project:` YAML per `rules/claude-md-metadata.md`; route body references to chosen `notes_path` and `specs_path`. Set `arch.rules_section: "## Law (never violated)"` unless the project already has a richer Architecture heading (then point `rules_section` at that heading **and** keep the Law index in the managed body — agents always load `law.md` when present). Default `stage: experimental` (right answer pre-1.0; per `rules/stage-policy.md` allowed values are `experimental`, `beta`, `stable`, `maintenance`). If Step 1 found `1.x.y` on disk (`pyproject.toml` / `Cargo.toml` / `package.json`), surface and ask whether `stable` instead — still default `experimental` if no pick.
+
+---
+
+## .claude/notes/law.md (canonical body)
+
+**The one rules file.** There is no second tier — a MolCrafts project does not
+carry "overridable defaults" an agent may set aside on its own reading of the
+situation. Written on the create path; on the update path, created when missing
+and **absorbed into** — never rewritten — when it already exists.
+
+A law is the fixed point the rest of the harness is measured against:
+`/mol:compact` resolves every conflict against this file, `/mol:note` may not
+weaken one, and deletion needs operator evidence (§ Guardrails of `compact`).
+
+Every law is a **concrete prohibition** — it names what must never happen and
+where, so a violation is something you can point at. "Never extract a helper
+with one call site" is a law; "keep the code clean" is not.
+
+Keep each to a heading, a stable id marker, and a short body. Project
+invariants (public APIs, on-disk formats, wire contracts) go here too — that is
+what `## What must never change casually` used to hold.
+
+```markdown
+# Law — never violated
+
+Every rule here outranks scope, minimal-diff, and convenience. There is no
+"just this once". CLAUDE.md carries the one-line index under
+`## Law (never violated)`.
+
+**Carve-outs are written, not inferred.** If a subsystem is exempt from a law,
+the operator wrote that exemption into this file, naming the subsystem. An
+agent never grants itself one — not from the task text, not from "this case is
+different".
+
+Adding, changing, or repealing a law is the operator's act via `/mol:note`. No
+skill deletes from this file on its own judgment — `/mol:compact` may dedupe
+and absorb into it, and may *propose* a deletion only with the evidence its
+guardrails require.
+
+<!-- mol:law:id:no-silent-debt -->
+## No silent debt
+
+Discover anti-pattern / failing test / broken invariant / clear bug in the
+surface you touch or depend on → **prioritize or hard-stop**:
+
+1. **Do not ignore** ("pre-existing, leave it"), skip-mark, weaken asserts, or
+   land features on known rot.
+2. **Fix now** if local + stage-allowed; else **stop**, report path:line, route
+   `/mol:debug` / `/mol:refactor` / supersede.
+3. **Name it** in the summary (found / fixed / blocking). Silence = process failure.
+
+Outranks "stay in scope" and "minimal diff" whenever those mean knowingly
+leaving rot you already saw.
+
+<!-- mol:law:id:cohesion-coupling -->
+## High cohesion, low coupling
+
+**Every module** (file / type / package) is a self-contained unit. Applies to
+every file, not only the important ones.
+
+- **High cohesion** — one clear responsibility. Split when a unit accumulates
+  more than one coherent job.
+- **Low coupling** — depend only on narrow, explicit interfaces. No
+  reach-through into other modules' internals; no ambient god context; no
+  hidden global registries required to exercise the unit.
+
+**Unit-test consequence (hard):** proving a module works uses **only that
+module's unit tests**, with fakes for outbound deps. The loop is
+`$META.build.test_single` on the mirrored path — not full-suite, not
+cross-module regression. `$META.build.test` and `regressions/` are CI nets.
+
+If a change "only works when the whole suite runs", or a unit test must boot
+sibling modules' real implementations, the full app, network, or external
+processes → the design is too coupled. **Stop**, split the boundary, inject the
+dependency, or route `/mol:refactor`. Do not "fix it with more integration tests."
+
+<!-- mol:law:id:tests-unit-only -->
+## `tests/` holds unit tests only
+
+**Never write an e2e or full-stack scenario under `tests/`.** `tests/` mirrors
+source path-for-path, one module per file, single-function tests, fakes for
+outbound deps. Public-API and end-to-end scenarios go to `regressions/` (with
+hard-coded goldens) or the project's own integration / browser harness.
+
+One e2e file under `tests/` breaks the unit gate for every module it touches:
+`$META.build.test_single` stops being a statement about one module, and § high
+cohesion, low coupling becomes unenforceable.
+
+<!-- mol:law:id:owning-type -->
+## Never a free function where a type owns the concept
+
+A domain concept is a type with methods. Module-level functions only for
+genuinely free operations (pure math with no owner) or thin package re-exports.
+A free function whose first parameter is the thing it operates on is a method
+that has not been moved yet.
+
+<!-- mol:law:id:one-concern -->
+## Never more than one concern in a public method
+
+Public APIs are primitive: construct → configure → **one** concern → read
+result. Composition is the caller's job. A method that fetches, transforms, and
+writes is three methods.
+
+<!-- mol:law:id:no-premature-extraction -->
+## Never extract a helper with one call site
+
+Inline until the **second real use**, or until a unit test must target that
+unit directly. One call site plus a guess about the future is not a second use.
+
+<!-- mol:law:id:no-factory-primary -->
+## Never a `make_*` / `build_*` / `create_*` wrapper as the primary constructor
+
+`Foo(...)` constructs a `Foo`. Alternate constructors exist only where they
+carry distinct semantics — `Foo.from_file`, `Foo.empty` — never as a second
+name for the constructor.
+
+<!-- mol:law:id:no-god-context -->
+## Never a god context bag
+
+No mega-dict, no ambient `context` / `state` / `env` blob threaded through
+call sites. Pass the fields the call actually needs. Reaching for "just add one
+more key" is the signal to add a parameter or a smaller type.
+
+<!-- mol:law:id:no-facade -->
+## Never an all-in-one façade
+
+No `do_everything(config)` entry point that hides the pipeline. Expose the
+primitives and let the caller compose them.
+
+<!-- add project invariants below, one `<!-- mol:law:id:<slug> -->` each.
+     Concrete prohibitions only: name what must never happen and where.
+     "Never write e2e under tests/" is a law; "write good tests" is not —
+     it forbids nothing, so nothing can violate it. -->
+
+## Shape check (before adding a public symbol)
+
+1. Natural owning type? → method on that type, not a free function.
+2. More than one user-visible step? → split into primitives.
+3. Only one in-tree call site? → do not extract.
+4. Tempted to hang another field on a "context" bag? → new parameter instead.
+5. Can this unit's tests pass with fakes only? If no → redesign the seam.
+
+## Test layout (not itself a law — the prohibition above is)
+
+`tests/` mirrors source path-for-path, types mirror types (`FooClass` →
+`TestFooClass`), single-function tests, one module → its own mirrored tests.
+Details: `tester` agent.
+```
 
 ---
 
@@ -459,6 +533,9 @@ If user opts into `mol` plugin contract: prepend `mol_project:` YAML per `rules/
 ```
 .claude/notes/
   README.md             # what this directory is for, how to navigate
+  law.md                # the inviolable rules + project invariants. Outranks
+                          every other file here. /mol:compact may absorb into
+                          it, never delete from it.
   notes.md              # evolving decisions, captured by /mol:note
   architecture.md       # project blueprint — modules, public surface, style,
                           layer roles. Stub points at /mol:map; populated
@@ -503,6 +580,9 @@ Skills/agents/hooks/settings under `.claude/` added later only when justified. D
 | `.agent/README.md`          | `.claude/notes/README.md`   | v0.3.0 |
 | `mol_project.notes_path: .agent/...` or `.claude/NOTES.md` | `mol_project.notes_path: .claude/notes/...` | v0.3.0: frontmatter follows the path move |
 | `mol_project.perf:` block in CLAUDE.md frontmatter | (delete) | `perf.focus` was a single-value enum that didn't scale; `optimizer` agent now detects catalogs per file |
+| `.claude/notes/design-preferences.md` (whole file) | `.claude/notes/law.md` | one rulebook, not two of differing force. Restate each rule as a prohibition ("OOP by default" → "never a free function where a type owns the concept") so a violation is pointable; drop the file |
+| `## Design preferences (default)` in CLAUDE.md | `## Law (never violated)` | same collapse, index side |
+| `## What must never change casually` (any spelling) in CLAUDE.md | `## Law (never violated)`, body → `.claude/notes/law.md` | project invariants are laws; same file, same protection |
 
 Add new rows as new conventions are codified. Layout violation **not** in this table = content-level drift → manual TODO; do not invent moves.
 
@@ -523,6 +603,9 @@ Add new rows as new conventions are codified. Layout violation **not** in this t
 - **Don't** rewrite anything outside managed sections, `mol_project:` block, or paths approved for migration.
 - **Don't** invent migrations not in the table. The table *is* the version-spec for layout.
 - **Don't** delete user-authored notes / decisions / specs during migration. Move, never drop.
+- **Don't** delete, reword, or soften a law. Migration into `law.md` is a
+  **move**; an existing `law.md` is absorbed into, never regenerated. Repeal is
+  the operator's act.
 - **Don't** auto-delete `status: done` spec — deletion contract belongs to `/mol:impl`. Flag as manual TODO.
 - **Don't** run update on dirty tree without explicit `--allow-dirty` override.
 

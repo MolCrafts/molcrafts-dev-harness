@@ -26,23 +26,26 @@ mol_project:
 
 # CLAUDE.md — molcrafts-harness
 
-The MolCrafts Claude-Code-first **plugin marketplace**. It ships the `mol`,
-`molexp`, and `molq` plugins (workflow skills + agents), and is *itself*
-maintained as a `mol*` project — released by `/mol:release` like any other.
+The MolCrafts Claude-Code-first **plugin marketplace**. It ships the `mol`
+plugin (workflow skills + agents), and is *itself* maintained as a `mol*`
+project — released by `/mol:release` like any other.
+
+**Developer tooling only.** This marketplace is what an engineer uses on a
+code repo. Product capabilities are MCP tools on molmcp planes, never skills
+here. A skill that only narrates calls to a tool is a second, untested copy of
+that tool — do not add one back. See
+[`.claude/notes/notes.md`](.claude/notes/notes.md) for the test.
 
 ## What this repo is
 
-- `plugins/<name>/` — the **published** plugins (`mol`, `molexp`, `molq`).
-  Each has `.claude-plugin/plugin.json` (Claude) + `.codex-plugin/plugin.json`
-  (Codex) + `skills/` + (for `mol`) `agents/` + `rules/`. Both marketplace
-  manifests must agree; the validator enforces it.
+- `plugins/mol/` — the **published** plugin. It has
+  `.claude-plugin/plugin.json` (Claude) + `.codex-plugin/plugin.json`
+  (Codex) + `skills/` + `agents/` + `rules/`.
 - `.claude-plugin/marketplace.json` — Claude marketplace registry (authoritative).
 - `.agents/plugins/marketplace.json` — native Codex registry (mirrors it; no
   version field).
-- `scripts/` — deterministic, **LLM-free** tooling runnable in CI:
-  `validate_repository.py` (structure gate) and `bump_version.py` (release bump).
 - `tests/` — stdlib structural guards (model policy, blueprint mechanism, git
-  publish). CI and pre-commit run these verbatim.
+  publish).
 - `.claude/skills/` — **project-local** maintenance skills for this repo
   (`check`, `new-skill`, `release-bump`); not published plugins.
 - `.claude/notes/` — passive project knowledge.
@@ -62,15 +65,16 @@ and [`plugins/mol/rules/agent-design.md`](plugins/mol/rules/agent-design.md).
 The `check` skill (§ semantic contracts) validates compliance. Skills are user
 verbs; agents are single-axis roles reached only through skills.
 
-## Must never change casually
+## Law (never violated)
 
-- **Dual-manifest parity.** Every plugin's Claude + Codex manifest agree on
-  name, version, and source. `scripts/validate_repository.py` gates it.
-- **Git publish invariants.** `origin` = fork (branch push only); `upstream` =
-  canonical (PR → green checks → merge only). Pre-commit ≡ CI. Never merge red.
-  See [`plugins/mol/rules/git-publish.md`](plugins/mol/rules/git-publish.md).
-- **One workflow file per skill.** `skills/CODEX.md` translates runtime only;
-  never a second copy of a workflow body.
+Full text: [`.claude/notes/law.md`](.claude/notes/law.md) — see its header for
+how a law is added, changed, or retired.
+
+- **No silent debt.** Rot you touch gets fixed or hard-stops the work; never skip-marked, never left silent in the summary.
+- **`tests/` is unit tests only.** Structural guards only; the install smoke lives in `/check`, never under `tests/`.
+- **Dual-manifest parity.** Every plugin's Claude + Codex manifest agree on name, version, and source. `scripts/validate_repository.py` gates it. A version bump belongs to the release commit only — never to a feature commit.
+- **Git publish invariants.** `origin` = fork (branch push only); `upstream` = canonical (PR → green checks → merge only). Pre-commit ≡ CI. Never merge red.
+- **One workflow file per skill.** `skills/CODEX.md` translates runtime only; never a second copy of a workflow body.
 
 ## Default workflow
 
@@ -83,9 +87,8 @@ verbs; agents are single-axis roles reached only through skills.
    `mol_project.release`), then runs the standard fork → PR → green → merge →
    tag chain.
 
-Validation runs at commit (pre-commit), in CI, and in the release gate. There
-is intentionally **no post-edit auto-validation hook** — it blocks structural
-refactors of the marketplace itself; run `/check` on demand instead.
+There is intentionally **no post-edit auto-validation hook** — it blocks
+structural refactors of the marketplace itself; run `/check` on demand.
 
 ## Adding a skill
 

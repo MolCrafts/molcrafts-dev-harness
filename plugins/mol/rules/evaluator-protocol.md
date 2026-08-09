@@ -274,8 +274,8 @@ Add to this table when a new evaluator skill lands inside `mol`.
   problem.
 - **Not a plugin contract.** Runtime evaluators live as `/mol:*`
   skills inside the `mol` plugin (not as separate plugins).
-  Plugins are reserved for capability boundaries that justify
-  independent versioning and dependency scope (e.g. `molq` owns the job-queue
-  lifecycle). Evaluators are just procedures that consume a
-  shared artifact and emit a shared verdict shape — they do not
+  A second plugin would need a capability boundary justifying its own
+  versioning and dependency scope — and a product capability is an MCP
+  tool on molmcp, not a plugin here. Evaluators are just procedures that
+  consume a shared artifact and emit a shared verdict shape — they do not
   warrant their own plugin scope.
