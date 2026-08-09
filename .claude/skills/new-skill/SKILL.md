@@ -1,12 +1,12 @@
 ---
 name: new-skill
-description: Scaffold one shared Claude-first skill inside a published MolCrafts plugin (mol/molexp/molq), including Codex-compatible metadata and adapter linkage, without creating a duplicate workflow. Updates the plugin README and runs `/check`. Project-local to this repo.
+description: Scaffold one shared Claude-first skill inside a published MolCrafts plugin (`mol`), including Codex-compatible metadata and adapter linkage, without creating a duplicate workflow. Updates the plugin README and runs `/check`. Project-local to this repo.
 argument-hint: "<plugin:skill-name> [<one-line description>]"
 ---
 
 # /new-skill — Skill Scaffold
 
-Scaffold a new skill into a published plugin (e.g. `mol:perf`, `molq:watch`).
+Scaffold a new skill into a published plugin (e.g. `mol:perf`).
 
 Write surface: `plugins/<plugin>/skills/<skill-name>/SKILL.md` + one appended row in `plugins/<plugin>/README.md`'s skills table. Reuse the plugin's existing `skills/CODEX.md`; never create a second Codex copy of the workflow. Never touch existing skills, plugin manifests, or marketplace metadata.
 
@@ -24,7 +24,7 @@ Form: `<plugin>:<skill-name> [<description>]`.
 
 Validate:
 
-- `<plugin>` ∈ `mol`, `molexp`, `molq` (or another existing dir under `plugins/`).
+- `<plugin>` is an existing dir under `plugins/` that is registered in `.claude-plugin/marketplace.json` (today: `mol`).
 - `<skill-name>` is kebab-case, no spaces, not already taken.
 - Description, if given, is one sentence.
 
@@ -35,8 +35,6 @@ Fail validation → report and stop.
 Read one existing SKILL.md under the same plugin. Default models:
 
 - `mol` → `plugins/mol/skills/note/SKILL.md`
-- `molexp` → `plugins/molexp/skills/adopt-workspace/SKILL.md`
-- `molq` → `plugins/molq/skills/jobs/SKILL.md`
 
 Match structure (not content): frontmatter (`name` + `description` + `argument-hint`), Codex adapter directive, H1 `/<plugin>:<skill>` heading, one-paragraph purpose, numbered Procedure, optional Guardrails, optional Idempotency, Output format.
 

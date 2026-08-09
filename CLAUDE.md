@@ -26,15 +26,22 @@ mol_project:
 
 # CLAUDE.md — molcrafts-harness
 
-The MolCrafts Claude-Code-first **plugin marketplace**. It ships the `mol`,
-`molexp`, and `molq` plugins (workflow skills + agents), and is *itself*
-maintained as a `mol*` project — released by `/mol:release` like any other.
+The MolCrafts Claude-Code-first **plugin marketplace**. It ships the `mol`
+plugin (workflow skills + agents), and is *itself* maintained as a `mol*`
+project — released by `/mol:release` like any other.
+
+**Developer tooling only.** This marketplace is what an engineer uses on a
+code repo. Product capabilities are MCP tools on molmcp, never skills here:
+job lifecycle is the `molq` plane, experiment-data workspaces are the `molexp`
+plane (including adoption: `plan_adoption` / `run_adoption` /
+`adoption_status` / `ingest_metrics`). A skill that only narrates calls to a
+tool is a second, untested copy of that tool — do not add one back.
 
 ## What this repo is
 
-- `plugins/<name>/` — the **published** plugins (`mol`, `molexp`, `molq`).
-  Each has `.claude-plugin/plugin.json` (Claude) + `.codex-plugin/plugin.json`
-  (Codex) + `skills/` + (for `mol`) `agents/` + `rules/`.
+- `plugins/mol/` — the **published** plugin. It has
+  `.claude-plugin/plugin.json` (Claude) + `.codex-plugin/plugin.json`
+  (Codex) + `skills/` + `agents/` + `rules/`.
 - `.claude-plugin/marketplace.json` — Claude marketplace registry (authoritative).
 - `.agents/plugins/marketplace.json` — native Codex registry (mirrors it; no
   version field).
@@ -66,7 +73,7 @@ how a law is added, changed, or retired.
 
 - **No silent debt.** Rot you touch gets fixed or hard-stops the work; never skip-marked, never left silent in the summary.
 - **`tests/` is unit tests only.** Structural guards only; the install smoke lives in `/check`, never under `tests/`.
-- **Dual-manifest parity.** Every plugin's Claude + Codex manifest agree on name, version, and source. `scripts/validate_repository.py` gates it.
+- **Dual-manifest parity.** Every plugin's Claude + Codex manifest agree on name, version, and source. `scripts/validate_repository.py` gates it. A version bump belongs to the release commit only — never to a feature commit.
 - **Git publish invariants.** `origin` = fork (branch push only); `upstream` = canonical (PR → green checks → merge only). Pre-commit ≡ CI. Never merge red.
 - **One workflow file per skill.** `skills/CODEX.md` translates runtime only; never a second copy of a workflow body.
 

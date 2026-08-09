@@ -12,7 +12,7 @@ from typing import Any
 
 
 FRONTMATTER_RE = re.compile(r"^---\r?\n(.*?)\r?\n---(?:\r?\n|$)(.*)$", re.DOTALL)
-# Any marketplace plugin name (mol, molexp, molq, …).
+# Any marketplace plugin name — never a fixed set; plugins come and go.
 SKILL_REF_RE = re.compile(r"/([a-z][a-z0-9-]*):([a-z0-9][a-z0-9-]*)")
 # Positive auto-invoke mentions only (skip "do not/never auto-invoke …").
 AUTO_INVOKE_RE = re.compile(

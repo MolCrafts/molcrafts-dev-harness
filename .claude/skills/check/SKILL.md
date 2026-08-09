@@ -1,6 +1,6 @@
 ---
 name: check
-description: Marketplace self-check for this repo — deterministic dual-manifest validator, semantic contracts, skill/agent content janitor (safe rewrites in place), and Claude/Codex install smoke over the published plugins (mol, molexp, molq). Project-local; run after plugin, skill, agent, hook, or marketplace edits, and as the release gate.
+description: Marketplace self-check for this repo — deterministic dual-manifest validator, semantic contracts, skill/agent content janitor (safe rewrites in place), and Claude/Codex install smoke over every published plugin. Project-local; run after plugin, skill, agent, hook, or marketplace edits, and as the release gate.
 argument-hint: "[<plugin>] [--static-only] [--no-write]"
 ---
 
@@ -45,6 +45,22 @@ python3 scripts/validate_repository.py --root <root>
 Script owns: both marketplace schemas and plugin order; Claude/Codex manifest names, versions, fields, source paths; skill frontmatter/names/H1s/adapter directives; agent frontmatter, model tiers, read-only boundaries; hook JSON; no duplicated Codex skill trees.
 
 Any script error → record as structure failure. Preserve exact path + message. Do not re-implement the script in prose. Continue only if you can still report later phases without invalid trees; otherwise stop after structure report.
+
+**The script only ever reads under `plugins/`. You must cover the rest by
+reading it.** Root `README.md`, `CLAUDE.md`, and `.claude/skills/*/SKILL.md`
+ship in the same release as the plugins they name, and nothing validates them —
+including this skill's own file, which is the release gate. On every run:
+
+- every `/<plugin>:<skill>` mentioned in those files resolves to a skill that
+  still exists (a removed plugin's commands may survive **only** inside an
+  explicit migration table, and the table must say what replaced them);
+- each project-local `.claude/skills/*/SKILL.md` has parseable frontmatter
+  whose `name` equals its directory, with a non-empty `description` — a
+  malformed one fails to load silently, with no error anywhere;
+- no instruction hard-codes the plugin list. Read it from
+  `.claude-plugin/marketplace.json`. Prose that names `mol` as though it were
+  the only plugin is correct today and wrong on the next one — the coupling
+  that made removing `molq`/`molexp` touch far more files than it should have.
 
 ### 3. Structure — semantic contracts
 
@@ -97,13 +113,12 @@ Skip entire phase if `--static-only`.
 
 #### 5a. Claude Code native validators
 
-Require `claude` CLI. Validate the marketplace and every published plugin:
+Require `claude` CLI. Validate the marketplace and every published plugin — read the plugin list from `.claude-plugin/marketplace.json`, never a hard-coded set:
 
 ```bash
 claude plugin validate <root>
-claude plugin validate <root>/plugins/mol
-claude plugin validate <root>/plugins/molexp
-claude plugin validate <root>/plugins/molq
+# then once per registered name (today that is just `mol`):
+claude plugin validate <root>/plugins/<name>
 ```
 
 Error → smoke BLOCK. Warnings → WARN (do not alone block PUBLISH-READY unless severity is error).
@@ -115,13 +130,14 @@ Require `codex` CLI. Create a **new** temp dir + `codex-home/` child. Set `CODEX
 ```bash
 CODEX_HOME=<temp>/codex-home codex plugin marketplace add <root> --json
 CODEX_HOME=<temp>/codex-home codex plugin list
-CODEX_HOME=<temp>/codex-home codex plugin add mol@molcrafts --json
+# then once per registered name (today that is just `mol`):
+CODEX_HOME=<temp>/codex-home codex plugin add <name>@molcrafts --json
 CODEX_HOME=<temp>/codex-home codex plugin list
 ```
 
-Final list must show `mol` installed and enabled at its manifest version, and `molexp` / `molq` available. Add and inspect those two as well when the change under test touches them.
+Final list must show every registered plugin available, installed and enabled at its manifest version.
 
-Inspect the installed `mol` cache: `skills/CODEX.md`, every source `skills/*/SKILL.md`, `agents/`, `rules/`.
+Inspect each installed plugin cache: `skills/CODEX.md`, every source `skills/*/SKILL.md`, `agents/`, `rules/`.
 
 Note: marketplace-maintenance tooling (this `check` skill, `new-skill`, `release-bump`, `scripts/validate_repository.py`, `tests/`) is **project-local to this repo**, not a published plugin — it is exercised directly here, not through a Codex install.
 
@@ -155,8 +171,8 @@ Smoke table (omit rows when `--static-only`):
 | repository validator | PASS / BLOCK | error/warning counts |
 | semantic | PASS / FIX REQUIRED | finding counts |
 | content | PASS / FIX REQUIRED | applied / ambiguity counts |
-| Claude marketplace / mol / molexp / molq | PASS / WARN / BLOCK / SKIP | native summary |
-| Codex marketplace / mol install | PASS / WARN / BLOCK / SKIP | version + cache |
+| Claude marketplace + each registered plugin | PASS / WARN / BLOCK / SKIP | native summary |
+| Codex marketplace / each plugin install | PASS / WARN / BLOCK / SKIP | version + cache |
 
 **Verdict**
 

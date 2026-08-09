@@ -49,6 +49,15 @@ at commit, in CI, and in the release gate.
 
 Never hand-edit one side. Never let a version bump land in one manifest only.
 
+**A version bump belongs to the release commit and nowhere else.** Never carry
+one in a `feat:` / `fix:` / `refactor:` commit — `release-bump` stages, the
+`release` skill owns the commit. A bump that rides along in a feature commit
+leaves the manifests disagreeing at HEAD, and `bump_version.py` refuses a
+mismatched tree, so the next `/mol:release` is blocked by a number nobody meant
+to change. Before releasing, `python3 scripts/bump_version.py --check` must
+print a single `current=` value; if it lists offenders instead, reconcile them
+in one commit first.
+
 <!-- mol:law:id:git-publish -->
 ## Git publish invariants
 
