@@ -31,11 +31,10 @@ plugin (workflow skills + agents), and is *itself* maintained as a `mol*`
 project — released by `/mol:release` like any other.
 
 **Developer tooling only.** This marketplace is what an engineer uses on a
-code repo. Product capabilities are MCP tools on molmcp, never skills here:
-job lifecycle is the `molq` plane, experiment-data workspaces are the `molexp`
-plane (including adoption: `plan_adoption` / `run_adoption` /
-`adoption_status` / `ingest_metrics`). A skill that only narrates calls to a
-tool is a second, untested copy of that tool — do not add one back.
+code repo. Product capabilities are MCP tools on molmcp planes, never skills
+here. A skill that only narrates calls to a tool is a second, untested copy of
+that tool — do not add one back. See
+[`.claude/notes/notes.md`](.claude/notes/notes.md) for the test.
 
 ## What this repo is
 
