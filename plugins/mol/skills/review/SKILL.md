@@ -8,7 +8,7 @@ argument-hint: "[<path> ...] [--axis=<name>[,<name>...]]"
 
 # /mol:review — Multi-Axis Code Review
 
-Static code review only. Read `CLAUDE.md` and parse `mol_project:` metadata when available.
+Static code review only. Read `CLAUDE.md` and parse `mol_project:` metadata when available. Read `.claude/notes/law.md` when present — it is the rulebook `architect` checks; this skill does not restate it.
 
 ## 1. Resolve scope
 
@@ -23,9 +23,11 @@ If no path is provided, review files from:
 
 ```bash
 git diff --name-only
-````
+```
 
 If no axis is provided, run all applicable axes.
+
+**Law is not optional on source.** When the resolved scope includes production or test source (files matching `$META.language`, including under `tests/`), always include `architect` even if `--axis` omitted `arch`. State that it was added. Markdown / docs / harness-notes-only scope: `architect` follows `--axis` as usual.
 
 Supported axes:
 

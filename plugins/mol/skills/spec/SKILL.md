@@ -10,7 +10,7 @@ argument-hint: "<feature description>"
 
 Read CLAUDE.md → parse `mol_project:` (`$META`); else emit adoption hint and stop. Resolve `$META.specs_path` (default `.claude/specs/`); create dir if missing.
 
-Produces `<slug>.md` (design) + `<slug>.acceptance.md` (binding "done" contract per `plugins/mol/rules/evaluator-protocol.md`). After persist, **always** stress-tests via `/mol:grill` (spec-audit). `/mol:impl` refuses without both files; deletes both when done. Specs live under `.claude/specs/` — never `docs/` or `.claude/notes/`.
+Produces `<slug>.md` (design) + `<slug>.acceptance.md` (binding "done" contract per `plugins/mol/rules/evaluator-protocol.md`). Persist is gated on `architect` `mode: design` against `.claude/notes/law.md` (Step 2.5). After persist, **always** stress-tests via `/mol:grill` (spec-audit). `/mol:impl` refuses without both files; deletes both when done. Specs live under `.claude/specs/` — never `docs/` or `.claude/notes/`.
 
 ## Procedure
 
@@ -30,14 +30,26 @@ Derive kebab-case slug. State in one sentence.
 
 ### 2. Delegate drafting to `spec-writer`
 
-Invoke `spec-writer` with: `request`, `slug`, `scope_layer`, `scientist_output`, `conflict_decision`, `interaction_points`, `librarian_report`.
+Invoke `spec-writer` with: `request`, `slug`, `scope_layer`, `scientist_output`, `conflict_decision`, `interaction_points`, `librarian_report`, and `architect_report` when Step 2.5 is retrying.
 
 `spec-writer` drafts spec body (Summary / Domain basis / Design / Files / Tasks / Testing / Out of scope) + acceptance criteria, self-validates, returns markdown **without writing to disk**.
 
 Branch on `Status:`:
-- `ok` → proceed to Step 3.
+- `ok` → Step 2.5.
 - `blocked` → surface failed items. User relaxes or refines; re-invoke from Step 2.
-- `split-needed` → large-spec split rule fired (`plugins/mol/rules/large-spec-split.md`). **Don't prompt.** Re-invoke `spec-writer` once per sub-slug in chain order with `slug: <base>-NN-<phase>`, `request: sub-scope`, `conflict_decision: independent`. Collect full chain; proceed to Step 3.
+- `split-needed` → large-spec split rule fired (`plugins/mol/rules/large-spec-split.md`). **Don't prompt.** Re-invoke `spec-writer` once per sub-slug in chain order with `slug: <base>-NN-<phase>`, `request: sub-scope`, `conflict_decision: independent`. Run Step 2.5 on each `ok` sub-draft; persist none until every sub-spec clears 2.5.
+
+### 2.5 Architect design-mode (persist gate)
+
+Mandatory when Step 2 returned `ok`. Do not persist a Design `architect` has not checked. Invoke `architect` with `mode: design` and the draft's Design + Files + `librarian_report`.
+
+| Result | Action |
+|---|---|
+| any 🚨/🔴 citing `law.md:` | Re-invoke `spec-writer` **once** with `architect_report` = those findings. Second `ok` → run design-mode again. Still 🚨/🔴 → **do not persist**; surface the findings and stop (same as `blocked`). |
+| 🟡/🟢 only, or `N/A` | Proceed to Step 3. Show those findings with the spec. |
+| `blocked` draft | Never run 2.5 on a blocked or split-needed body. |
+
+`librarian` (Step 1) is placement/reuse. This step is law-compliance of the proposed shape. Do not skip 2.5 because `spec-writer` self-validated.
 
 ### 3. Persist & show
 
@@ -65,7 +77,7 @@ When `/mol:grill` returns:
 | `audit_result` | Action |
 |---|---|
 | `clean` | Optional non-binding `grilled: true`. Step 4. |
-| `supersede_needed` | Re-invoke `spec-writer` (`conflict_decision: supersede:<slug>`, request = original + Decisions + payload). On `ok`, overwrite both files + INDEX. Set `grilled: true`. On `blocked`, stop with last good persist. |
+| `supersede_needed` | Re-invoke `spec-writer` (`conflict_decision: supersede:<slug>`, request = original + Decisions + payload). On `ok`, re-run Step 2.5 before overwrite — law 🚨/🔴 still do not land. Then overwrite both files + INDEX. Set `grilled: true`. On `blocked` or 2.5 still red, stop with last good persist. |
 | redirected / under-formed | Leave `approved`. Surface Open list. User may re-run `/mol:grill mode:spec-audit <slug>` or re-spec. |
 
 Grill is read-only — this skill owns supersede writes.
@@ -84,6 +96,7 @@ End with one-line summary after impl-all returns (or after park).
 
 - **Chinese input** → `spec-writer` produces body in Chinese; frontmatter keys, INDEX entry, and Tasks verb-prefixes stay English for downstream tooling.
 - **Drafting is delegated** to `spec-writer` to keep parent context free for conversation. Triage, persistence, INDEX upkeep, and post-persist supersede stay here; first persist is automatic — never wait for approval. See `plugins/mol/rules/agent-design.md`.
+- Always run Step 2.5 (`architect` `mode: design`) before persist. Law 🚨/🔴 never land on disk.
 - Always auto-invoke `/mol:grill` after persist before ready-for-impl F2.
 - Clean / superseded clean → auto `/mol:impl-all`; parked redirect → do not impl.
 - Lifecycle states: `plugins/mol/rules/evaluator-protocol.md`. `grilled: true` is advisory only.

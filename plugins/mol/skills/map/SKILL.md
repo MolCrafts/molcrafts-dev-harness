@@ -12,7 +12,7 @@ Read CLAUDE.md → parse `mol_project:` (`$META`); else emit adoption hint and s
 
 Blueprint path: always `<root>/.claude/notes/architecture.md` — passive internal context belongs under `.claude/notes/` per `plugins/mol/rules/design-principles.md` L1, regardless of `$META.notes_path`. (A `notes_path` outside `.claude/notes/` is itself an L1 violation flagged by `/mol:bootstrap`.) Create `.claude/notes/` if missing.
 
-Single responsibility: build/refresh the blueprint. `librarian` consumes it; `architect` (review mode) enforces compliance against it (O1 in `design-principles.md`). `/mol:spec` Step 4.5 consults `librarian`, which reads what this skill writes.
+Single responsibility: build/refresh the blueprint. `librarian` consumes it; `architect` (review mode) enforces compliance against it (O1 in `design-principles.md`). `/mol:spec` Step 1 consults `librarian`, which reads what this skill writes.
 
 ## Procedure
 
@@ -89,7 +89,7 @@ Show the diff summary for the log, then proceed immediately to write. Fully agen
 
 - blueprint path
 - one line per change category: *"3 modules added, 1 removed, 2 surface changes."*
-- hint: `librarian` picks this up on next `/mol:spec` Step 4.5.
+- hint: `librarian` picks this up on next `/mol:spec` Step 1.
 
 One-line F2 summary:
 

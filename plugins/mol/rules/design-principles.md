@@ -47,51 +47,43 @@ Skills that snapshot "pre-existing red" for *their own* regression
 gates (e.g. `/mol:simplify`) must still **surface** those failures as
 priority debt and must not treat silence as success.
 
-### 0.2 Project law — high cohesion, low coupling
+### 0.2 Product constitution — `.claude/notes/law.md`
 
-Also shipped in `.claude/notes/law.md`. **Every module** (file / type /
-package) in a MolCrafts product is constrained:
+Bootstrapped products ship a **constitution**, not a style guide or
+pattern catalog. Structure (do not restate the bodies here):
 
-- **High cohesion** — one clear responsibility per module; split when
-  a unit accumulates more than one coherent job.
-- **Low coupling** — depend only on narrow, explicit seams
-  (constructor args, method params, small protocols/traits). No
-  reach-through into other modules' internals; no ambient god
-  context required to exercise the unit.
+shape → cuts → public surface → who owns truth → how it evolves →
+how we prove it.
 
-**Unit-test consequence (the operational definition of this law):**
-a module is green when **its own** mirrored unit tests under `tests/`
-pass via `$META.build.test_single`. Fakes/stubs cover outbound deps.
-You do **not** need full-suite (`$META.build.test`) or cross-module
-regression to prove the unit. Full suite and `regressions/` are CI /
-public-API nets — not the unit-test loop during design or impl.
+Eleven laws, each Principle / Intent / Never / Derived guidance:
+conceptual integrity, architecture first, earn complexity, locality of
+change, hide decisions, dependencies follow policy, primitive public
+surface, explicit flow, one home per fact, no silent debt, tests
+verify owned behavior. Exceptions are recorded (§ VII). YAGNI, SOLID,
+DRY, and the rest are § VIII heuristics — they do not outrank a law.
 
-If unit tests only pass when the whole product graph boots, the
-design is too coupled → stop and split / inject / `/mol:refactor`.
-Do not compensate with more integration tests.
+Tactics (escape-hatch types, live oracles, RED-before-GREEN, test
+layout) belong in the skills that run them.
 
-Enforced by: bootstrap managed section + `architect` (coupling /
-isolation anti-patterns) + `tester` (unit scope = one module) +
-`implementer` / `spec-writer` (law.md).
+Enforced by: bootstrap template + absorb-missing-id; `architect`
+(review + design-mode); `spec-writer`; `implementer`; `tester`.
+Scheduled by W4 — law is not a verb.
 
 ### 0.3 Law is a category, not an adjective
 
-`.claude/notes/law.md` holds the rules that admit **no** exception —
-§ 0.1, § 0.2, "`tests/` holds unit tests only", and each project's own
-invariants (public APIs, on-disk formats, wire contracts).
-There is **no second tier**: a project does not carry "overridable defaults"
-an agent may set aside on its own reading of the situation. A carve-out exists
-only where `law.md` itself names the exempt subsystem.
+`.claude/notes/law.md` holds the rules that admit **no** exception.
+There is **no second tier**: a project does not carry "overridable
+defaults" an agent may set aside. A carve-out exists only where
+`law.md` § VII records it, naming the subsystem.
 
-**A law is a concrete prohibition**, not a sentiment: it names the thing
-that must never happen and where. *"Never write an e2e test under
-`tests/`"* is a law. *"Write good tests"* is not — it forbids nothing, so
-nothing can violate it. If you cannot state what a violation looks like,
-it is a preference at best.
+**If a rule cannot identify a concrete forbidden design, it is
+guidance, not law.** *"Never add a layer whose only justification is
+future flexibility"* is a law. *"Keep the architecture simple"* is
+not — it forbids nothing.
 
-This gives compaction a fixed point: `/mol:compact` resolves every harness
-conflict against `law.md` first, and may not retire a law on its own
-judgment. A skill able to delete its own constraints has none.
+This gives compaction a fixed point: `/mol:compact` resolves every
+harness conflict against `law.md` first, and may not retire a law on
+its own judgment. A skill able to delete its own constraints has none.
 
 A rule dies only two ways, and neither is a judgment call:
 
@@ -417,14 +409,26 @@ See Section 1.
   to write failing tests before any implementation is attempted.
 - **W3.** Reviews fan out in parallel. `/mol:review` issues all
   delegate calls in one message.
-- **W4.** Architecture validation happens at four points: scope
-  assessment (planning), **spec-time librarian consult**
-  (`/mol:spec` Step 4.5 — placement and reuse advice against the
-  project blueprint at `.claude/notes/architecture.md`), after
-  implementation, and after refactor. The spec-time consult is the
-  fourth scheduling point and was added to plug the planning-phase
-  visibility gap that produced duplicate modules and wrong-layer
-  placement in large projects.
+- **W4.** Architecture validation is scheduled, not hoped-for:
+
+  1. **Planning** (`/mol:discuss`, `/mol:grill` plan) — load
+     `law.md`; a law-violating alternative is not an Open option.
+  2. **Spec-time librarian** (`/mol:spec` Step 1) — placement and
+     reuse against `.claude/notes/architecture.md`.
+  3. **Spec-time architect design-mode** (`/mol:spec` after
+     `spec-writer` returns `ok`, before persist) — proposed Design
+     vs `law.md`. 🚨/🔴 citing a law id blocks persist. This is the
+     compliance gate; librarian does not do it (O1: consult vs
+     validate).
+  4. **After implementation** (`/mol:impl` MEDIUM/LARGE) and
+     **after refactor** (`/mol:refactor` pre/post) — `architect`
+     review mode on source.
+  5. **Review** (`/mol:review`) — `architect` is non-optional
+     whenever the scope includes production or test source, even if
+     `--axis` omits `arch`. Docs-only scope may skip.
+
+  Law is not a user verb and has no dedicated skill. It is a
+  constraint every coding verb inherits, not a sibling to invoke.
 - **W5.** Bug fixing is a separate, minimal loop (`/mol:debug`:
   reproduce → diagnose → patch → verify), not a degenerate case of
   `/mol:impl`. It carries no spec gate and no acceptance ledger,
@@ -517,8 +521,9 @@ tree. Output one finding per row: `<emoji> file:line — message` (🚨 /
       covered? (W1)
 - [ ] Does the implementation skill enforce RED before GREEN? (W2)
 - [ ] Do review skills fan out in parallel? (W3)
-- [ ] Are architecture checks scheduled at the three required points?
-      (W4)
+- [ ] Are architecture checks scheduled at planning, spec-time
+      librarian, spec-time architect design-mode, post-impl /
+      post-refactor, and review-on-source? (W4)
 - [ ] Is bug fixing a minimal loop separate from the spec-gated
       feature path? (W5)
 

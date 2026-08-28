@@ -56,7 +56,7 @@ revert, and cross-cutting judgment — that's skill-layer concerns.
 
 | Agent | Reviews | Write-mode counterpart skill |
 |---|---|---|
-| `architect` | module boundaries / layer rules | `/mol:refactor` (with architect pre/post check) |
+| `architect` | module boundaries / layer rules / `law.md` shape (review mode on source; **design mode** on a spec draft; inventory mode for `/mol:map`) | `/mol:refactor` (with architect pre/post check); `/mol:spec` persist gate (design mode) |
 | `debugger` | failure root cause + fix recommendation | `/mol:debug` Step 3 (`implementer` applies the recommendation; debugger never patches) |
 | `optimizer` | perf anti-patterns | `/mol:debug` (perf-driven fix) |
 | `scientist` | equations / units / refs | `/mol:debug` (corrected math) or `/mol:spec` (refine derivation) |

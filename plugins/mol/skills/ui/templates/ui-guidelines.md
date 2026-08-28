@@ -30,6 +30,13 @@ will never be rewritten.
 
 `<one paragraph: the regions, their sizes, what resizes, what persists>`
 
+## Information design (workbench)
+
+`<when archetype is workbench: last info-stage date; overview skeleton
+(MetaStrip / StatusInline / primary table); where lineage lives; any
+product-specific field homes that refine information-design.md without
+contradicting it. Leave "n/a — viewer" for viewer products.>`
+
 ## Product components
 
 | Component | Wraps | Owns |
