@@ -118,7 +118,8 @@ End with the F2 one-line summary:
 - **Minimal diff.** The patch resolves the reproduction and nothing else.
   Refactoring that the fix reveals is routed to `/mol:refactor`, not
   smuggled in.
-- **Never weaken a test to go green.** A failing assertion is fixed at
-  the source or reported, never relaxed, skipped, or baselined.
+- **Never weaken a test to go green.** `law.md:no-silent-debt` — a
+  failing assertion is fixed at the source or reported, never relaxed,
+  skipped, or baselined.
 - **Bugs only.** A request that turns out to need new behavior stops
   here and routes to `/mol:spec`.

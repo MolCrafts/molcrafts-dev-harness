@@ -74,3 +74,15 @@ Full contract: [`plugins/mol/rules/git-publish.md`](../../plugins/mol/rules/git-
 A skill's workflow body exists exactly once, in its `SKILL.md`.
 `skills/CODEX.md` translates runtime differences only — it is never a second
 copy of a workflow. Two copies of a workflow means one of them is already wrong.
+
+<!-- mol:law:id:no-skill-copy-of-tool -->
+## Never a skill that copies a tool
+
+This marketplace is developer tooling. A molcrafts **product** capability
+is an MCP tool on a molmcp plane — never a plugin skill here.
+
+A skill is justified when the *procedure* is the hard part (deciding,
+sequencing, gating across a repo's state). **Never** add a skill whose
+body is a list of tool calls: that is a second, untested copy of the
+tool. A tool enforces preconditions in code and returns a value; a
+prompt only asks the model to remember.

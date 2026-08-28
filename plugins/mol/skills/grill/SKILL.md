@@ -8,7 +8,7 @@ argument-hint: "[mode:plan|spec-audit] <plan, requirement, or slug>"
 
 # /mol:grill — Plan / Spec Interrogation
 
-Read CLAUDE.md → parse `mol_project:` (`$META`).
+Read CLAUDE.md → parse `mol_project:` (`$META`). Read `.claude/notes/law.md` when present. Recommended answers must satisfy it; do not offer a waiver.
 
 Relentless interview: one focused question per turn, each with a recommended answer, until the decision tree is empty. Not `/mol:discuss` (whether/what) and not `/mol:spec` (writes the artifact). Chain: discuss → **grill (plan)** → user ignites spec → **grill (spec-audit)** → impl.
 
@@ -27,7 +27,7 @@ Explicit `mode:` wins. Infer `spec-audit` only when caller is post-persist `/mol
 
 **plan.** Restate in one sentence (user's language). List code/spec/notes surface read. No plan (open topic / "should we…?") → `/mol:discuss`; do not invent a plan.
 
-**spec-audit.** Restate `spec under audit: <slug>`. Read Design (incl. Reuse), Files, Tasks, Out of scope, Testing, acceptance. Missing file → stop; do not invent.
+**spec-audit.** Restate `spec under audit: <slug>`. Read Design (incl. Reuse), Files, Tasks, Out of scope, Testing, acceptance. Missing file → stop; do not invent. A Design that violates `law.md` (extra boundary with no current caller/test, façade, god context, …) is `supersede_needed` — not a question for the user to waive. This is a backstop; `/mol:spec` Step 2.5 should have blocked persist already.
 
 ### 2. Decision tree
 

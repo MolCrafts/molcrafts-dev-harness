@@ -51,7 +51,7 @@ Write-mode counterpart to `janitor` (read-only). See `plugins/mol/rules/agent-de
 Run `$META.build.check` and `$META.build.test`. Record passing list + pre-existing failures.
 
 - **Regression gate for this skill's edits:** revert if you introduce *new* failures vs the snapshot (not "suite must be fully green before simplify starts").
-- **Iron law (no silent debt):** pre-existing failures are **not** "ignore and move on." List them in the report as **priority debt**. If a failure sits in the simplify scope (touched files / same module) and is stage-allowed hygiene or a clear bug → fix it in this run (or hand to `/mol:debug` and stop). Never add skips or weaken tests to quiet them. Out-of-scope pre-existing red → name path + route (`/mol:debug …`) in the summary; do not omit.
+- **`law.md:no-silent-debt`:** pre-existing failures are **not** "ignore and move on." List them in the report as **priority debt**. If a failure sits in the simplify scope (touched files / same module) and is stage-allowed hygiene or a clear bug → fix it in this run (or hand to `/mol:debug` and stop). Out-of-scope pre-existing red → name path + route (`/mol:debug …`) in the summary; do not omit.
 
 ### 3. Delegate to `janitor`
 

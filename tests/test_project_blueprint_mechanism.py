@@ -472,13 +472,17 @@ class ProjectBlueprintMechanismTests(unittest.TestCase):
         text_lower = text.lower()
 
         self.assertIn(
-            "spec-time librarian consult",
+            "spec-time librarian",
             text_lower,
-            "ac-011: design-principles.md must mention 'spec-time librarian "
-            "consult' as the W4 fourth scheduling point.",
+            "ac-011: design-principles.md W4 must schedule spec-time "
+            "librarian (placement / reuse).",
         )
-        # "W4" anchor must be present so the reader can see the section the
-        # spec-time consult is being added to.
+        self.assertIn(
+            "design-mode",
+            text_lower,
+            "ac-011: design-principles.md W4 must schedule spec-time "
+            "architect design-mode (law compliance of the proposed Design).",
+        )
         self.assertIn(
             "W4",
             text,

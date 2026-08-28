@@ -32,9 +32,8 @@ project — released by `/mol:release` like any other.
 
 **Developer tooling only.** This marketplace is what an engineer uses on a
 code repo. Product capabilities are MCP tools on molmcp planes, never skills
-here. A skill that only narrates calls to a tool is a second, untested copy of
-that tool — do not add one back. See
-[`.claude/notes/notes.md`](.claude/notes/notes.md) for the test.
+here — law `no-skill-copy-of-tool` in
+[`.claude/notes/law.md`](.claude/notes/law.md).
 
 ## What this repo is
 
@@ -75,6 +74,7 @@ how a law is added, changed, or retired.
 - **Dual-manifest parity.** Every plugin's Claude + Codex manifest agree on name, version, and source. `scripts/validate_repository.py` gates it. A version bump belongs to the release commit only — never to a feature commit.
 - **Git publish invariants.** `origin` = fork (branch push only); `upstream` = canonical (PR → green checks → merge only). Pre-commit ≡ CI. Never merge red.
 - **One workflow file per skill.** `skills/CODEX.md` translates runtime only; never a second copy of a workflow body.
+- **Never a skill that copies a tool.** Product capability is an MCP tool; a skill whose body is a list of tool calls is a second, untested copy.
 
 ## Default workflow
 

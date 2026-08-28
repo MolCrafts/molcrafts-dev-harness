@@ -86,10 +86,11 @@ pytest / rust tests / gtest / vitest â€” under `tests/`, single-function; e2e â†
 
 ## Rules
 
-- RED before GREEN; never weaken tests.
+- RED before GREEN; never weaken tests (`law.md:no-silent-debt`).
 - Layout + naming mirror; no e2e in `tests/`; goldens hard-coded.
 - Module isolation: unit green via `test_single` only; no full-suite
-  dependency for unit correctness.
+  dependency for unit correctness (`law.md:tests-owned-behavior`,
+  `locality-of-change`).
 - Domain mandatory when `science.required`.
 - Type-safe tests (no `any`/`Any` escapes).
 

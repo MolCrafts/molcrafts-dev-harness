@@ -8,7 +8,7 @@ argument-hint: "<topic or question>"
 
 # /mol:discuss — Design Discussion
 
-Read CLAUDE.md → parse `mol_project:` (`$META`).
+Read CLAUDE.md → parse `mol_project:` (`$META`). Read `.claude/notes/law.md` when present. A law-violating alternative is not an Open option — discard it; it is not a trade-off.
 
 Trade-offs *before* a spec. Exits: **converge** → `/mol:grill` (plan) or **discard** (no trace). Not `/mol:spec` (clear requirement), `/mol:grill` (plan already formed), `/mol:note` (decided rules).
 

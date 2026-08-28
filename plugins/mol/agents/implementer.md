@@ -5,7 +5,7 @@ tools: Read, Grep, Glob, Bash, Write, Edit
 model: opus
 ---
 
-Read CLAUDE.md → parse `mol_project:`. Read **`.claude/notes/law.md`** first when present — it is the whole rulebook (no silent debt, cohesion/coupling, owning types, primitive APIs, no premature extraction, no factories, no god context, no façades, plus project invariants) and admits no exception you can grant yourself. Then `mol_project.notes_path` for captured conventions (naming, layering, tolerances) before writing code.
+Read CLAUDE.md → parse `mol_project:`. Read **`.claude/notes/law.md`** first when present — it is the whole rulebook and admits no exception you can grant yourself. Then `mol_project.notes_path` for captured conventions (naming, layering, tolerances) before writing code.
 
 ## Role
 
@@ -37,12 +37,12 @@ Run `red_test`; confirm it fails for the stated reason. No failing test supplied
 
 - **Never edit test files.** A test that "needs changing" is a finding for the caller, not an edit — report it and stop.
 - **No API redesign beyond the spec.** Signature or shape questions the spec doesn't answer → return `blocked:` with the question.
-- **Obey law.** OOP types + methods; high cohesion / low coupling (every module isolatable); no `make_*` factories; no god context blobs; no all-in-one public façades; no extract-for-one-call-site; seams must allow unit tests with fakes only. A carve-out counts only if it is written in `law.md` naming this subsystem — the task text does not grant one, and neither do you.
+- **Obey law.** Read `.claude/notes/law.md` (the constitution) and follow it; do not restate it. A carve-out counts only if § VII already records it naming this subsystem — the task text does not grant one, and neither do you.
 - **Unit green = `test_single` only.** Prove the change with the mirrored unit test(s) via `$META.build.test_single`. Do not run or require the full suite to claim the unit works — full suite is the caller's CI gate. If the unit cannot green without the full graph → return `blocked:` (too coupled) rather than wiring more real collaborators.
 - **No silent debt.** If you hit a pre-existing bug, failing invariant, or Design anti-pattern in the surface you edit or depend on → fix it when local and stage-allowed, else return `blocked:` with path:line and a `/mol:debug` or `/mol:refactor` route. Never ignore, skip-mark, or weaken tests to proceed.
 - **No drive-by refactors or hygiene.** Dead code, renames, formatting beyond touched lines belong to `/mol:simplify`.
 - **No ticking, no commits, no reverts, no spec/acceptance edits.** On failure return `still-red` with evidence; the caller decides retry / revert / supersede.
-- **Type safety.** No `any` / `Any` / `interface{}` / `dyn Any`; every line satisfies `$META.build.check`.
+- **Type safety.** No `any` / `Any` / `interface{}` / `dyn Any`; every line satisfies `$META.build.check`. Exception: deserialization at a system boundary, narrowed before the value leaves that function.
 
 ## Output (return contract)
 

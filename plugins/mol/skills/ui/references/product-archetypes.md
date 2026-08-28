@@ -239,6 +239,26 @@ LogViewer         ArtifactTable      MetricTable
 Stage 3 builds five first: **WorkflowNode · NodeInspector ·
 ParameterField · RunStatusBadge · BottomPanel**.
 
+### Entity overviews — not SaaS dashboards
+
+Project / Experiment / Run center surfaces are **workbench overviews**,
+not admin KPI boards. Full rules live in `information-design.md`.
+
+Hard summary (do not restate the whole file here):
+
+- **One fact, one chrome home.** Identity → nav + breadcrumb; lineage →
+  inspector; operational strip → MetaStrip/StatusInline once; primary
+  children → center table/list.
+- **Overview job** = situation + next action. **Detail tabs** = full
+  inventory. Do not blur them.
+- **Hierarchy priority:** Project leads with experiments; Experiment
+  leads with runs (varying params as columns); Run leads with this
+  attempt's params/results/error.
+- **Pattern from the question**, not from the payload: data → table or
+  property list, not "another Card".
+- **Scientific layers:** varying params on the run table; fixed params
+  once; status as badge + rollup bar; lineage never re-hosted on center.
+
 ### Workbench-specific hazards
 
 - Status vocabulary is exactly the § 5 list. Do not invent `pending`,
@@ -250,3 +270,6 @@ ParameterField · RunStatusBadge · BottomPanel**.
   freeze, not a perf nit.
 - Long-running work needs determinate progress where it exists and
   honest indeterminate state where it doesn't — never a fake progress bar.
+- Applying a generic SaaS dashboard template (KPI wall + identity card +
+  related-entities card) to every hierarchy level is an information-
+  design failure — fix with stage `info`, not more tokens.

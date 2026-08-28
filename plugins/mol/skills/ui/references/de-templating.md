@@ -116,10 +116,17 @@ region is the loudest template tell.
 | `text-base` panel body | `--text-body` (13px) |
 | Dialog for a small edit | inline editing or popover |
 | New route for logs/errors | a tab in the bottom panel |
-| Grid of stat cards | one dense table, or a status bar |
+| Grid of stat cards | one dense MetaStrip / StatusInline + table (see `information-design.md`) |
+| KPI wall (Total/Succeeded/Failed tiles) | StatusInline; at most one decision metric in the strip |
+| Identity / lineage card on overview | breadcrumb + inspector Lineage/Details |
+| Card soup of empty equal widgets | one primary inventory + one empty state |
 | Colored badge per entity type | one glyph + a light type stripe |
 | Skeleton block per card | one skeleton matching the real row height |
 | Spinner centered on the page | in-place skeleton or an inline indicator |
+
+Content architecture (what belongs on overview vs inspector vs detail)
+is not solved by deleting cards alone — apply stage `info` and
+`information-design.md` when the page still answers the wrong questions.
 
 ---
 

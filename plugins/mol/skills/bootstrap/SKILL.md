@@ -97,7 +97,7 @@ Smallest set that gives this repo a useful harness. Reasonable defaults:
   per law. There is no second, overridable tier.
 - `.claude/notes/notes.md` — passive memory, `/mol:note` writes here
 - `.claude/specs/` (empty dir) — `/mol:spec` writes here
-- `.claude/notes/architecture.md` stub (one line: `> 跑 /mol:map 填充本蓝图` / "run /mol:map to populate this blueprint") — `librarian` consumes during `/mol:spec` Step 4.5; populated by `/mol:map`, not bootstrap
+- `.claude/notes/architecture.md` stub (one line: `> 跑 /mol:map 填充本蓝图` / "run /mol:map to populate this blueprint") — `librarian` consumes during `/mol:spec` Step 1; populated by `/mol:map`, not bootstrap
 
 Add more only when justified by the repo:
 
@@ -160,11 +160,13 @@ Condensed from `rules/design-principles.md`. Focus on structural drift; skip con
 - **Law** — `.claude/notes/law.md` must exist and hold every rule, one
   `<!-- mol:law:id:<slug> -->` marker each, with `## Law (never
   violated)` in CLAUDE.md as its one-line-per-law index. Missing file →
-  🟡. A rule stated **only** outside `law.md` (a surviving
-  `design-preferences.md`, an absolute in `notes.md`) → 🟡 promote; the
-  body moves, CLAUDE.md keeps the one-liner. **Rule prose inlined in
-  CLAUDE.md → 🟡**: move it, leave the one-liner. Never demote or reword
-  a law during repair.
+  🟡. A default id present in this SKILL.md's law.md template but
+  absent from the project's `law.md` → 🟡 append that template body
+  (never reword an id that already exists). A rule stated **only**
+  outside `law.md` (a surviving `design-preferences.md`, an absolute in
+  `notes.md`) → 🟡 promote; the body moves, CLAUDE.md keeps the
+  one-liner. **Rule prose inlined in CLAUDE.md → 🟡**: move it, leave
+  the one-liner. Never demote or reword a law during repair.
 - **No second rules tier** — a `## Design preferences (default)` section
   or a surviving `.claude/notes/design-preferences.md` is 🟡: fold its
   rules into `law.md` as prohibitions (see migration table). Agents may
@@ -226,6 +228,7 @@ Build "current version's expected shape" from plugin source:
 - managed-section template body from this SKILL.md's CLAUDE.md template (§ below)
 - migration table (§ below)
 - structural invariants (spec INDEX consistency, stable marker pairing)
+- default law ids from this SKILL.md's law.md template (`<!-- mol:law:id:* -->`)
 
 Walk harness on disk; produce **structural diff**:
 
@@ -233,6 +236,7 @@ Walk harness on disk; produce **structural diff**:
 - managed sections: marker missing / drifted body / orphan marker
 - layout: any `From (legacy)` path that exists in repo
 - structural invariants: spec files not in INDEX, INDEX entries with no file, unmatched markers
+- default-law absorb: template id missing from `.claude/notes/law.md`
 
 Content-level findings from § 4 (Layering / Orthogonality / Knowledge / Capability / Idempotency beyond what's auto-repaired) → manual TODO bucket.
 
@@ -251,6 +255,7 @@ Upgrade plan (n items, target = current plugin version):
   - install mol_project frontmatter (block missing)
   - rename mol_project.foo → mol_project.bar (renamed in current contract)
   - refresh CLAUDE.md managed section (template body changed)
+  - append missing default law architecture-first (template id absent)
   - move .agent/specs/ → .claude/specs/ (current convention)
   - rebuild .claude/specs/INDEX.md (3 files unindexed)
 
@@ -272,6 +277,10 @@ Per approved item:
 - **frontmatter (install)** — write fresh `mol_project:` YAML at top of CLAUDE.md per current contract. Preserve any pre-existing first-line content by moving below new frontmatter.
 - **frontmatter (field rename/repair)** — rewrite only affected fields. Preserve user-customization fields the contract doesn't enforce.
 - **managed-section refresh** — replace contents between stable markers with current template body.
+- **default-law absorb** — for each `<!-- mol:law:id:<slug> -->` in this
+  SKILL.md's law.md template that is absent from the project's
+  `.claude/notes/law.md`, **append** that id's template heading + body.
+  Never rewrite, reorder, or reword a law whose id already exists.
 - **orphan-marker repair** — only when context unambiguous; otherwise demote to manual TODO.
 - **INDEX rebuild** — regenerate from actual spec files.
 - **migration** — `git mv` (or `mv`) per table; patch INDEX entries that referenced old path.
@@ -348,15 +357,17 @@ operator wrote one into `law.md` naming the subsystem. An agent never grants
 itself one. CLAUDE.md carries **one line per law**; it is an index, not the
 rulebook.
 
-- **No silent debt.** Rot you touch gets fixed or hard-stops the work; never skip-marked, never left silent in the summary.
-- **High cohesion, low coupling.** One job per module; deps through explicit seams. A unit is green via `$META.build.test_single` alone — if it needs the full suite, a sibling module's real implementation, or external processes, the design is wrong.
-- **Never an e2e under `tests/`.** `tests/` mirrors source, one module per file; end-to-end scenarios go to `regressions/` or the integration harness.
-- **Never a free function where a type owns the concept.** Methods on types; module-level only for genuinely free operations or thin re-exports.
-- **Never more than one concern in a public method.** Construct → configure → one concern → read result.
-- **Never extract a helper with one call site.** Inline until a second real use, or until a unit test must target it.
-- **Never a `make_*` / `build_*` / `create_*` wrapper as the primary constructor.** `Foo(...)` constructs; alternate constructors only with distinct semantics (`Foo.from_file`).
-- **Never a god context bag.** Pass the fields the call needs.
-- **Never an all-in-one façade.** Composition is the caller's job.
+- **Conceptual integrity.** One problem, one coherent model — never parallel abstractions for the same concept.
+- **Architecture first.** Simple shape before local convenience — never a layer only for later or unmeasured performance.
+- **Earn complexity.** Every extra concept is paid for by demonstrated pressure.
+- **Locality of change.** A local requirement requires a local change — never lockstep, never cycles.
+- **Hide decisions, expose contracts.** Never leak representation or lifecycle across a boundary.
+- **Dependencies follow policy.** Mechanism depends on policy, never the reverse.
+- **Primitive public surface.** Orthogonal primitives; composition is the caller's job.
+- **Explicit flow.** Required ordering and ownership are enforceable — never a ritual the caller can skip.
+- **One home per fact.** Authority is unique. Representation may be copied; authority may not.
+- **No silent debt.** A conscious exception is debt; an invisible one becomes architecture.
+- **Tests verify owned behavior.** Tests belong to the owner of the behavior; unit-only by default.
 
 <add project invariants here — public APIs, on-disk formats, wire contracts.
 Concrete prohibitions, one line each; body goes in law.md>
@@ -382,148 +393,348 @@ If user opts into `mol` plugin contract: prepend `mol_project:` YAML per `rules/
 
 ## .claude/notes/law.md (canonical body)
 
-**The one rules file.** There is no second tier — a MolCrafts project does not
-carry "overridable defaults" an agent may set aside on its own reading of the
-situation. Written on the create path; on the update path, created when missing
+**The project constitution**, not a style guide or pattern catalog.
+Written on the create path; on the update path, created when missing
 and **absorbed into** — never rewritten — when it already exists.
+Missing default ids (present in the template below, absent from the
+project file) are **appended**; an existing id is left untouched.
 
-A law is the fixed point the rest of the harness is measured against:
-`/mol:compact` resolves every conflict against this file, `/mol:note` may not
-weaken one, and deletion needs operator evidence (§ Guardrails of `compact`).
+`/mol:compact` resolves every conflict against this file. `/mol:note`
+may not weaken a law. Deletion needs operator evidence.
 
-Every law is a **concrete prohibition** — it names what must never happen and
-where, so a violation is something you can point at. "Never extract a helper
-with one call site" is a law; "keep the code clean" is not.
+Each law uses the same template: Principle / Intent / Never / Derived
+guidance. If a rule cannot identify a concrete forbidden design, it is
+guidance, not law — put it in § VIII.
 
-Keep each to a heading, a stable id marker, and a short body. Project
-invariants (public APIs, on-disk formats, wire contracts) go here too — that is
-what `## What must never change casually` used to hold.
+Project invariants (public APIs, on-disk formats, wire contracts) are
+additional laws under the same template, one `<!-- mol:law:id:<slug> -->`
+each.
 
 ```markdown
-# Law — never violated
+# Software Engineering Laws
 
-Every rule here outranks scope, minimal-diff, and convenience. There is no
-"just this once". CLAUDE.md carries the one-line index under
-`## Law (never violated)`.
+Every rule here outranks scope, minimal-diff, and convenience. There is
+no "just this once". CLAUDE.md indexes one line per law.
 
-**Carve-outs are written, not inferred.** If a subsystem is exempt from a law,
-the operator wrote that exemption into this file, naming the subsystem. An
-agent never grants itself one — not from the task text, not from "this case is
-different".
+Adding, changing, or repealing a law is the operator's act via
+`/mol:note`. No skill retires a law on its own judgment.
 
-Adding, changing, or repealing a law is the operator's act via `/mol:note`. No
-skill deletes from this file on its own judgment — `/mol:compact` may dedupe
-and absorb into it, and may *propose* a deletion only with the evidence its
-guardrails require.
+## 0. Purpose
+
+This file is not a style guide and not a pattern catalog.
+
+Laws define **non-negotiable design constraints**. They constrain
+architecture, ownership, dependency, state, and change. Patterns and
+implementation techniques are subordinate to these laws. A law must be
+strong enough to reject a concrete design in review.
+
+If a rule cannot identify a concrete forbidden design, it is guidance,
+not law.
+
+A carve-out exists only where this file records it under § VII, naming
+the subsystem. An agent never grants itself one.
+
+---
+
+# I. System shape
+
+How the system as a whole should look.
+
+<!-- mol:law:id:conceptual-integrity -->
+## 1. Conceptual integrity
+
+**Principle.** One problem should have one coherent conceptual model.
+
+**Intent.** The system uses one set of concepts, terms, and abstractions.
+A subsystem does not invent a sibling model of the same idea.
+
+**Never**
+
+- Never create parallel abstractions for the same concept.
+- Never introduce aliases that develop independent semantics.
+- Never solve local inconvenience by inventing a new conceptual layer.
+
+**Derived guidance.** Prefer extending an existing concept over a sibling
+concept. Shared vocabulary is part of architecture.
+
+<!-- mol:law:id:architecture-first -->
+## 2. Architecture first
+
+**Principle.** Preserve a simple system shape before optimizing local
+convenience.
+
+**Intent.** Local coding convenience must not buy itself by breaking the
+whole architecture. Simple, clear shape is the foundation of
+maintainability and performance.
+
+**Never**
+
+- Never add a layer only because it may be useful later.
+- Never introduce infrastructure for unmeasured performance concerns.
+- Never let a local feature dictate global architecture.
+
+**Derived guidance.** Prefer fewer architectural concepts. Prefer
+removing indirection over explaining it.
+
+<!-- mol:law:id:earn-complexity -->
+## 3. Earn complexity
+
+**Principle.** Every unit of complexity must be justified by demonstrated
+pressure.
+
+**Intent.** Complexity is not free. Need, performance, compatibility, or
+extension must already exist before an abstraction does. Architecture
+first governs shape; this law governs the complexity budget.
+
+**Never**
+
+- Never generalize for hypothetical future requirements.
+- Never optimize without evidence.
+- Never make something configurable merely because it could vary.
+- Never add extensibility without an actual extension point.
+
+---
+
+# II. Boundaries and ownership
+
+How the system is cut.
+
+<!-- mol:law:id:locality-of-change -->
+## 4. Locality of change
+
+**Principle.** A local requirement should require a local change.
+
+**Intent.** A good module boundary shows up as change locality, not as
+an abstract cohesion score. High cohesion and low coupling are
+consequences of this law.
+
+**Never**
+
+- Never require unrelated modules to change in lockstep.
+- Never create dependency cycles.
+- Never spread one responsibility across multiple owners.
+- Never make callers understand unrelated subsystem details.
+
+**Derived guidance.** A unit is green via `$META.build.test_single` on
+its mirrored tests with fakes for outbound deps. If proving the unit
+requires the full graph, the boundary is wrong — split, inject, or
+`/mol:refactor`. Do not compensate with more integration tests.
+
+<!-- mol:law:id:hide-decisions -->
+## 5. Hide decisions, expose contracts
+
+**Principle.** Implementation decisions stay behind their owning
+boundary.
+
+**Intent.** A module hides **decisions that may change**, not merely
+lines in a different file.
+
+**Never**
+
+- Never leak representation details across module boundaries.
+- Never expose internal lifecycle or storage decisions as public
+  contract.
+- Never require callers to reproduce internal policy.
+
+**Derived guidance.** Program against stable contracts. An
+implementation detail should be replaceable without rewriting
+consumers.
+
+<!-- mol:law:id:dependencies-follow-policy -->
+## 6. Dependencies follow policy
+
+**Principle.** Replaceable mechanisms depend on stable policy, never
+the reverse.
+
+**Intent.** Core semantics are not defined by UI, binding, framework,
+storage, or transport.
+
+    mechanism → policy
+
+not
+
+    policy → mechanism
+
+**Never**
+
+- Never make domain/core depend on UI.
+- Never make core depend on a serialization format.
+- Never make core depend on Python / Rust / WASM binding concerns.
+- Never let a framework define domain semantics.
+
+---
+
+# III. Public surface
+
+How others use the system.
+
+<!-- mol:law:id:primitive-surface -->
+## 7. Primitive public surface
+
+**Principle.** Public APIs expose orthogonal primitives; composition
+belongs to callers.
+
+**Intent.** The API ships building blocks, not a hidden workflow.
+
+**Never**
+
+- Never provide an all-in-one façade for unrelated operations.
+- Never make one public method perform several independently
+  meaningful steps.
+- Never encode one preferred workflow as the only API.
+- Never duplicate primitives with convenience aliases that become
+  separate contracts.
+
+**Derived guidance.** High-level workflows may live outside the
+primitive core (`regressions/`, docs, caller code).
+
+<!-- mol:law:id:explicit-flow -->
+## 8. Explicit flow
+
+**Principle.** State transitions, ownership, and required ordering
+must be explicit and enforceable.
+
+**Intent.** A user must not enter an illegal state by forgetting a
+step. This covers initialization, validation, lifecycle, context, and
+state machines.
+
+**Never**
+
+- Never rely on hidden ambient context.
+- Never expose `validate()` / `init()` steps callers can forget.
+- Never depend on undocumented call ordering.
+- Never encode required state in conventions alone.
+- Never make illegal states trivially representable when the
+  type/model can prevent them.
+
+---
+
+# IV. Truth and state
+
+Who the system believes.
+
+<!-- mol:law:id:one-home -->
+## 9. One home per fact
+
+**Principle.** Every authoritative fact has exactly one owner.
+
+**Intent.** Avoid synchronization and drift. **Representation may be
+duplicated; authority cannot.** A serialization copy may exist; it
+must not become a second mutable truth.
+
+**Never**
+
+- Never maintain two independently mutable representations of the
+  same truth.
+- Never cache authoritative state without explicit invalidation
+  semantics.
+- Never copy configuration into another source of truth.
+- Never infer and persist information that can be derived cheaply
+  from its owner.
+
+---
+
+# V. Evolution
+
+How the system changes without rotting.
 
 <!-- mol:law:id:no-silent-debt -->
-## No silent debt
+## 10. No silent debt
 
-Discover anti-pattern / failing test / broken invariant / clear bug in the
-surface you touch or depend on → **prioritize or hard-stop**:
+**Principle.** Debt must be explicit, bounded, and owned.
 
-1. **Do not ignore** ("pre-existing, leave it"), skip-mark, weaken asserts, or
-   land features on known rot.
-2. **Fix now** if local + stage-allowed; else **stop**, report path:line, route
-   `/mol:debug` / `/mol:refactor` / supersede.
-3. **Name it** in the summary (found / fixed / blocking). Silence = process failure.
+**Intent.** The worst debt is not a hack — it is a hack packaged as
+normal architecture. A conscious exception is debt. An invisible
+exception becomes architecture.
 
-Outranks "stay in scope" and "minimal diff" whenever those mean knowingly
-leaving rot you already saw.
+**Never**
 
-<!-- mol:law:id:cohesion-coupling -->
-## High cohesion, low coupling
+- Never hide an architectural compromise inside an unrelated change.
+- Never introduce temporary duplication without marking its removal
+  path.
+- Never normalize a workaround by silently building on top of it.
+- Never leave known invariant violations undocumented.
+- Never ignore, skip-mark, or weaken an assert on rot you already
+  saw. Fix it if local and stage-allowed; else stop, report
+  path:line, route `/mol:debug` / `/mol:refactor` / supersede, and
+  name it in the summary.
 
-**Every module** (file / type / package) is a self-contained unit. Applies to
-every file, not only the important ones.
+Outranks "stay in scope" and "minimal diff".
 
-- **High cohesion** — one clear responsibility. Split when a unit accumulates
-  more than one coherent job.
-- **Low coupling** — depend only on narrow, explicit interfaces. No
-  reach-through into other modules' internals; no ambient god context; no
-  hidden global registries required to exercise the unit.
+---
 
-**Unit-test consequence (hard):** proving a module works uses **only that
-module's unit tests**, with fakes for outbound deps. The loop is
-`$META.build.test_single` on the mirrored path — not full-suite, not
-cross-module regression. `$META.build.test` and `regressions/` are CI nets.
+# VI. Verification
 
-If a change "only works when the whole suite runs", or a unit test must boot
-sibling modules' real implementations, the full app, network, or external
-processes → the design is too coupled. **Stop**, split the boundary, inject the
-dependency, or route `/mol:refactor`. Do not "fix it with more integration tests."
+How we prove the design has not decayed. Separate from architecture
+laws.
 
-<!-- mol:law:id:tests-unit-only -->
-## `tests/` holds unit tests only
+<!-- mol:law:id:tests-owned-behavior -->
+## 11. Tests verify owned behavior
 
-**Never write an e2e or full-stack scenario under `tests/`.** `tests/` mirrors
-source path-for-path, one module per file, single-function tests, fakes for
-outbound deps. Public-API and end-to-end scenarios go to `regressions/` (with
-hard-coded goldens) or the project's own integration / browser harness.
+**Principle.** Tests belong to the owner of the behavior they verify.
 
-One e2e file under `tests/` breaks the unit gate for every module it touches:
-`$META.build.test_single` stops being a statement about one module, and § high
-cohesion, low coupling becomes unenforceable.
+**Intent.** Tests verify a module's own contract, not the choreography
+of the whole system.
 
-<!-- mol:law:id:owning-type -->
-## Never a free function where a type owns the concept
+**Never**
 
-A domain concept is a type with methods. Module-level functions only for
-genuinely free operations (pure math with no owner) or thin package re-exports.
-A free function whose first parameter is the thing it operates on is a method
-that has not been moved yet.
+- Never test implementation details as public behavior.
+- Never require unrelated subsystems merely to verify local
+  semantics.
+- Never use broad integration setup where a unit boundary is
+  sufficient.
 
-<!-- mol:law:id:one-concern -->
-## Never more than one concern in a public method
+### Project testing policy: unit-only by default
 
-Public APIs are primitive: construct → configure → **one** concern → read
-result. Composition is the caller's job. A method that fetches, transforms, and
-writes is three methods.
+New behavior must be unit-testable at its ownership boundary
+(`tests/` mirrors source, one module, `$META.build.test_single`,
+fakes for outbound deps). Integration / end-to-end scenarios go to
+`regressions/` or the project's integration harness, with explicit
+justification. A design that can only be tested end-to-end is
+evidence of a missing boundary.
 
-<!-- mol:law:id:no-premature-extraction -->
-## Never extract a helper with one call site
+Layout details: `tester` agent.
 
-Inline until the **second real use**, or until a unit test must target that
-unit directly. One call site plus a guess about the future is not a second use.
+---
 
-<!-- mol:law:id:no-factory-primary -->
-## Never a `make_*` / `build_*` / `create_*` wrapper as the primary constructor
+# VII. Exceptions
 
-`Foo(...)` constructs a `Foo`. Alternate constructors exist only where they
-carry distinct semantics — `Foo.from_file`, `Foo.empty` — never as a second
-name for the constructor.
+Any design that violates a law is recorded, not inferred:
 
-<!-- mol:law:id:no-god-context -->
-## Never a god context bag
+    Law violated:
+    Reason:
+    Evidence:
+    Scope:
+    Removal condition:
+    Owner:
 
-No mega-dict, no ambient `context` / `state` / `env` blob threaded through
-call sites. Pass the fields the call actually needs. Reaching for "just add one
-more key" is the signal to add a parameter or a smaller type.
+Convenience is not sufficient justification. The exception is itself
+an architecture decision. An agent never grants one from the task
+text.
 
-<!-- mol:law:id:no-facade -->
-## Never an all-in-one façade
+---
 
-No `do_everything(config)` entry point that hides the pipeline. Expose the
-primitives and let the caller compose them.
+# VIII. Derived principles
 
-<!-- add project invariants below, one `<!-- mol:law:id:<slug> -->` each.
-     Concrete prohibitions only: name what must never happen and where.
-     "Never write e2e under tests/" is a law; "write good tests" is not —
-     it forbids nothing, so nothing can violate it. -->
+These are consequences or heuristics, not laws. SOLID, YAGNI, DRY,
+and the rest do not outrank this file. If someone cites them, first
+show which law they serve.
 
-## Shape check (before adding a public symbol)
+| Heuristic | Comes from |
+|---|---|
+| YAGNI | Earn complexity |
+| High cohesion / low coupling | Locality of change |
+| Dependency inversion | Dependencies follow policy |
+| Information hiding | Hide decisions, expose contracts |
+| DRY (authority only) | One home per fact |
+| Deep modules | Hide decisions + Primitive public surface |
+| Composition over inheritance | Locality of change (a common means) |
+| KISS / fewer boxes | Architecture first + Earn complexity |
+| Program to interfaces | Hide decisions, expose contracts |
+| Single responsibility / SoC | Locality of change + Primitive public surface |
 
-1. Natural owning type? → method on that type, not a free function.
-2. More than one user-visible step? → split into primitives.
-3. Only one in-tree call site? → do not extract.
-4. Tempted to hang another field on a "context" bag? → new parameter instead.
-5. Can this unit's tests pass with fakes only? If no → redesign the seam.
-
-## Test layout (not itself a law — the prohibition above is)
-
-`tests/` mirrors source path-for-path, types mirror types (`FooClass` →
-`TestFooClass`), single-function tests, one module → its own mirrored tests.
-Details: `tester` agent.
+<!-- add project invariants below, one `<!-- mol:law:id:<slug> -->` each,
+     using the same Principle / Intent / Never / Derived guidance template. -->
 ```
 
 ---
@@ -540,7 +751,7 @@ Details: `tester` agent.
   architecture.md       # project blueprint — modules, public surface, style,
                           layer roles. Stub points at /mol:map; populated
                           by /mol:map. Consumed by `librarian` during
-                          /mol:spec Step 4.5.
+                          /mol:spec Step 1.
   open-questions.md     # things uncertain during bootstrap; user fills over time
 ```
 
@@ -604,7 +815,8 @@ Add new rows as new conventions are codified. Layout violation **not** in this t
 - **Don't** invent migrations not in the table. The table *is* the version-spec for layout.
 - **Don't** delete user-authored notes / decisions / specs during migration. Move, never drop.
 - **Don't** delete, reword, or soften a law. Migration into `law.md` is a
-  **move**; an existing `law.md` is absorbed into, never regenerated. Repeal is
+  **move**; an existing `law.md` is absorbed into, never regenerated.
+  Appending a missing default id is absorb, not rewrite. Repeal is
   the operator's act.
 - **Don't** auto-delete `status: done` spec — deletion contract belongs to `/mol:impl`. Flag as manual TODO.
 - **Don't** run update on dirty tree without explicit `--allow-dirty` override.
@@ -620,6 +832,7 @@ Re-runs must be safe:
 - Existing drifted harness → check reports findings, update repairs structural items, manual TODOs listed
 - Managed sections → updated in place via stable markers
 - User-authored notes / decisions / docs → never deleted or rewritten
+- Missing default law id → append once; re-run → no-op for that id
 - Repeated update runs → converge to no-op (structural diff empty after first repair)
 - Post-update re-check → structural findings at zero; manual TODOs remain as listed
 

@@ -5,7 +5,7 @@ tools: Read, Grep, Glob
 model: opus
 ---
 
-Read CLAUDE.md → parse `mol_project:` (`$META`). Read `mol_project.notes_path` for captured rules affecting spec format (naming, tolerances, units).
+Read CLAUDE.md → parse `mol_project:` (`$META`). Read **`.claude/notes/law.md`** first when present — Design must satisfy the constitution (I–VI). Then `mol_project.notes_path` for captured rules affecting spec format (naming, tolerances, units).
 
 Drafts spec body + binding acceptance contract for `/mol:spec`. Caller handles user interaction, conflict detection, persistence. Return both documents as markdown text — **never write to disk**.
 
@@ -19,6 +19,7 @@ Drafts spec body + binding acceptance contract for `/mol:spec`. Caller handles u
   - `supersede:<slug>` — refining/replacing; caller passes old spec body; reconcile Tasks (keep `[x]` for valid done, restore `[ ]` with `(rework: <why>)` for redo, remove invalidated, add new)
 - `interaction_points` — closest existing pattern + new public API / data-model / cross-layer dependency from Step 4.
 - `librarian_report` — `librarian`'s four-section advisory (Reuse candidates tagged `reuse` / `generalize` / `pattern`, Recommended placement, Closest pattern, Confidence). May be absent only when the caller noted "blueprint refresh deferred".
+- `architect_report` — optional. Present when the caller is re-drafting after `architect` `mode: design` returned 🚨/🔴. Resolve every law finding in the new Design (drop the extra boundary, or name the current caller/test). An unresolved law finding → `Status: blocked`.
 - `slug` — kebab-case slug (`morse-bond`, `nose-hoover`, `amber-prmtop-reader`).
 
 ## Procedure
@@ -29,10 +30,10 @@ Sections (in order, all mandatory):
 
 - **Summary** — one paragraph; user-visible outcome. Plain prose, no bullets.
 - **Domain basis** — equations, refs with DOI/arXiv, units. Required iff `$META.science.required` AND spec declares physics. Fold `scientist_output` refs verbatim if provided.
-- **Design** — entities touched, new symbols, lifecycle / ownership. Not a Summary restatement. **Required shape** from `.claude/notes/law.md`: OOP types + primitive single-responsibility methods; **high cohesion / low coupling** (every new module unit-testable in isolation via fakes — full suite is not the unit gate); no factory functions, god context blobs, one-shot abstractions, or all-in-one façades. These are law, not defaults — a carve-out counts only if `law.md` names this subsystem; the request text does not grant one. Ends with a **Reuse decision** sub-block resolving *every* `librarian_report` reuse candidate: `reuse <symbol>` (spec calls it) / `generalize <symbol>` (spawns a "Generalize …" task promoting the existing implementation to serve both callers) / `new — <one-line why neither fits>`. Never design a symbol that reimplements a candidate tagged `reuse` or `generalize`; new-symbol naming, construction, and error handling follow the report's Closest pattern so the new code reads like the existing code.
+- **Design** — entities touched, new symbols, lifecycle / ownership. Not a Summary restatement. **Required shape** from `.claude/notes/law.md` I–VI (read the constitution; do not restate it). A carve-out counts only if § VII already records it; the request text does not grant one. Ends with a **Reuse decision** sub-block resolving *every* `librarian_report` reuse candidate: `reuse <symbol>` (spec calls it) / `generalize <symbol>` (spawns a "Generalize …" task promoting the existing implementation to serve both callers) / `new — <one-line why neither fits>`. Never design a symbol that reimplements a candidate tagged `reuse` or `generalize`; new-symbol naming, construction, and error handling follow the report's Closest pattern so the new code reads like the existing code.
 - **Files to create or modify** — bulleted concrete file paths (no globs). Mark new files: `(new)` after path.
 - **Tasks** — see § 2; mandatory; every file in Files-to-create-or-modify must appear in ≥1 Tasks item.
-- **Testing strategy** — unit tests only under `tests/`, paths mirroring `src/` (e.g. `src/foo/boo.py` → `tests/test_foo/test_boo.py`), types mirrored (`FooClass` → `TestFooClass`). Each unit test targets a **single function/method** of **one module** — no e2e under `tests/`; unit green = `$META.build.test_single` on that path only (not full suite). Enumerate happy path, edge cases, and (if `$META.science.required`) domain validation with **hard-coded** expected values. Also names the spec's **regression example**: one minimal public-API script under `regressions/` (repo root — never inside `tests/`). If a third-party oracle was used to obtain goldens, the regression must **embed those values as literals** (comment: tool, version, command, date) — never import or subprocess the third party at test time. Physics → textbook case + citation + hard-coded refs; otherwise minimal use-case + expected output.
+- **Testing strategy** — `law.md:tests-owned-behavior` (unit-only by default). Paths mirror `src/` (`src/foo/boo.py` → `tests/test_foo/test_boo.py`), types mirrored (`FooClass` → `TestFooClass`). Each unit test targets a **single function/method** of **one module** — no e2e under `tests/`; unit green = `$META.build.test_single` on that path only. Enumerate happy path, edge cases, and (if `$META.science.required`) domain validation with **hard-coded** expected values. Also names the spec's **regression example**: one minimal public-API script under `regressions/` (repo root). If a third-party oracle was used to obtain goldens, the regression must **embed those values as literals** (comment: tool, version, command, date) — never import or subprocess the third party at test time. Physics → textbook case + citation + hard-coded refs; otherwise minimal use-case + expected output.
 - **Out of scope** — present even if "none". Empty section is a smell — if "none", confirm alternatives were considered.
 
 ### 2. Tasks (the implementation tracker)
@@ -92,9 +93,10 @@ Required for cross-references:
 - [ ] Every file in **Files to create or modify** appears in ≥1 Tasks item.
 - [ ] Domain refs (DOI / arXiv) present iff `$META.science.required` and physics declared.
 
-Required for reuse & regression:
+Required for reuse, shape & regression:
 
 - [ ] Every `librarian_report` reuse candidate resolved in Design's Reuse decision; no Task reimplements a candidate tagged `reuse` or `generalize`.
+- [ ] **Constitution I–VI** (the file, not this prompt): the Design is rejectable under a named law if it violates one. Fail this item → `Status: blocked` after the 3-revision loop. This is a first pass — `/mol:spec` still runs `architect` `mode: design` before persist.
 - [ ] Exactly one regression-example task targeting `regressions/`, with a matching `type: runtime` acceptance criterion (§ 4).
 
 ### 4. Propose acceptance criteria
