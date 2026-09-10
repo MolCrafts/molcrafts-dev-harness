@@ -1,0 +1,306 @@
+component_root = "plugins/mol"
+
+[[component]]
+kind = "skill"
+name = "bootstrap"
+path = "skills/bootstrap/SKILL.md"
+
+[[component]]
+kind = "skill"
+name = "ci-sync"
+path = "skills/ci-sync/SKILL.md"
+
+[[component]]
+kind = "skill"
+name = "close"
+path = "skills/close/SKILL.md"
+
+[[component]]
+kind = "skill"
+name = "commit"
+path = "skills/commit/SKILL.md"
+
+[[component]]
+kind = "skill"
+name = "compact"
+path = "skills/compact/SKILL.md"
+
+[[component]]
+kind = "skill"
+name = "cuda"
+path = "skills/cuda/SKILL.md"
+
+[[component]]
+kind = "skill"
+name = "debug"
+path = "skills/debug/SKILL.md"
+
+[[component]]
+kind = "skill"
+name = "discuss"
+path = "skills/discuss/SKILL.md"
+
+[[component]]
+kind = "skill"
+name = "docs"
+path = "skills/docs/SKILL.md"
+
+[[component]]
+kind = "skill"
+name = "evo"
+path = "skills/evo/SKILL.md"
+
+[[component]]
+kind = "skill"
+name = "grill"
+path = "skills/grill/SKILL.md"
+
+[[component]]
+kind = "skill"
+name = "hpc"
+path = "skills/hpc/SKILL.md"
+
+[[component]]
+kind = "skill"
+name = "impl"
+path = "skills/impl/SKILL.md"
+
+[[component]]
+kind = "skill"
+name = "impl-all"
+path = "skills/impl-all/SKILL.md"
+
+[[component]]
+kind = "skill"
+name = "litrev"
+path = "skills/litrev/SKILL.md"
+
+[[component]]
+kind = "skill"
+name = "map"
+path = "skills/map/SKILL.md"
+
+[[component]]
+kind = "skill"
+name = "note"
+path = "skills/note/SKILL.md"
+
+[[component]]
+kind = "skill"
+name = "perf"
+path = "skills/perf/SKILL.md"
+
+[[component]]
+kind = "skill"
+name = "pr"
+path = "skills/pr/SKILL.md"
+
+[[component]]
+kind = "skill"
+name = "push"
+path = "skills/push/SKILL.md"
+
+[[component]]
+kind = "skill"
+name = "refactor"
+path = "skills/refactor/SKILL.md"
+
+[[component]]
+kind = "skill"
+name = "release"
+path = "skills/release/SKILL.md"
+
+[[component]]
+kind = "skill"
+name = "review"
+path = "skills/review/SKILL.md"
+
+[[component]]
+kind = "skill"
+name = "ship"
+path = "skills/ship/SKILL.md"
+
+[[component]]
+kind = "skill"
+name = "simplify"
+path = "skills/simplify/SKILL.md"
+
+[[component]]
+kind = "skill"
+name = "spec"
+path = "skills/spec/SKILL.md"
+
+[[component]]
+kind = "skill"
+name = "tag"
+path = "skills/tag/SKILL.md"
+
+[[component]]
+kind = "skill"
+name = "test"
+path = "skills/test/SKILL.md"
+
+[[component]]
+kind = "skill"
+name = "ui"
+path = "skills/ui/SKILL.md"
+
+[[component]]
+kind = "agent"
+name = "architect"
+path = "agents/architect.md"
+
+[[component]]
+kind = "agent"
+name = "ci-guard"
+path = "agents/ci-guard.md"
+
+[[component]]
+kind = "agent"
+name = "compute-scientist"
+path = "agents/compute-scientist.md"
+
+[[component]]
+kind = "agent"
+name = "debugger"
+path = "agents/debugger.md"
+
+[[component]]
+kind = "agent"
+name = "documenter"
+path = "agents/documenter.md"
+
+[[component]]
+kind = "agent"
+name = "ffi-guard"
+path = "agents/ffi-guard.md"
+
+[[component]]
+kind = "agent"
+name = "harness-actor"
+path = "agents/harness-actor.md"
+
+[[component]]
+kind = "agent"
+name = "harness-observer"
+path = "agents/harness-observer.md"
+
+[[component]]
+kind = "agent"
+name = "implementer"
+path = "agents/implementer.md"
+
+[[component]]
+kind = "agent"
+name = "janitor"
+path = "agents/janitor.md"
+
+[[component]]
+kind = "agent"
+name = "librarian"
+path = "agents/librarian.md"
+
+[[component]]
+kind = "agent"
+name = "optimizer"
+path = "agents/optimizer.md"
+
+[[component]]
+kind = "agent"
+name = "pm"
+path = "agents/pm.md"
+
+[[component]]
+kind = "agent"
+name = "reviewer"
+path = "agents/reviewer.md"
+
+[[component]]
+kind = "agent"
+name = "scientist"
+path = "agents/scientist.md"
+
+[[component]]
+kind = "agent"
+name = "security-reviewer"
+path = "agents/security-reviewer.md"
+
+[[component]]
+kind = "agent"
+name = "spec-writer"
+path = "agents/spec-writer.md"
+
+[[component]]
+kind = "agent"
+name = "tester"
+path = "agents/tester.md"
+
+[[component]]
+kind = "agent"
+name = "undergrad"
+path = "agents/undergrad.md"
+
+[[component]]
+kind = "agent"
+name = "user"
+path = "agents/user.md"
+
+[[component]]
+kind = "agent"
+name = "web-design"
+path = "agents/web-design.md"
+
+[[component]]
+kind = "rule"
+name = "agent-design"
+path = "rules/agent-design.md"
+
+[[component]]
+kind = "rule"
+name = "claude-md-metadata"
+path = "rules/claude-md-metadata.md"
+
+[[component]]
+kind = "rule"
+name = "design-principles"
+path = "rules/design-principles.md"
+
+[[component]]
+kind = "rule"
+name = "evaluator-protocol"
+path = "rules/evaluator-protocol.md"
+
+[[component]]
+kind = "rule"
+name = "git-publish"
+path = "rules/git-publish.md"
+
+[[component]]
+kind = "rule"
+name = "large-spec-split"
+path = "rules/large-spec-split.md"
+
+[[component]]
+kind = "rule"
+name = "model-policy"
+path = "rules/model-policy.md"
+
+[[component]]
+kind = "rule"
+name = "stage-policy"
+path = "rules/stage-policy.md"
+
+[[component]]
+kind = "bundle"
+name = "daily"
+members = ["skill.spec", "skill.grill", "skill.impl", "skill.impl-all", "skill.review", "skill.commit", "skill.note"]
+
+[[component]]
+kind = "bundle"
+name = "dev"
+members = ["agent.architect", "agent.ci-guard", "agent.compute-scientist", "agent.debugger", "agent.documenter", "agent.ffi-guard", "agent.implementer", "agent.janitor", "agent.librarian", "agent.optimizer", "agent.pm", "agent.reviewer", "agent.scientist", "agent.security-reviewer", "agent.spec-writer", "agent.tester", "agent.undergrad", "agent.user", "agent.web-design", "rule.agent-design", "rule.claude-md-metadata", "rule.design-principles", "rule.evaluator-protocol", "rule.git-publish", "rule.large-spec-split", "rule.model-policy", "rule.stage-policy"]
+
+[[component]]
+kind = "bundle"
+name = "evo"
+members = ["skill.evo", "agent.harness-actor", "agent.harness-observer"]
