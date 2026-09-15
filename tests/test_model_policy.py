@@ -46,10 +46,12 @@ OPUS_AGENTS = {
     "documenter",
     "implementer",
     "ffi-guard",
+    "harness-actor",
 }
 
 SONNET_AGENTS = {
     "ci-guard",
+    "harness-observer",
     "reviewer",
     "janitor",
 }

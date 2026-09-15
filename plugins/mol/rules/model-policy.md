@@ -50,8 +50,8 @@ decisions only it can make.
 
 | Tier (`model:`) | Agents | Why |
 |---|---|---|
-| `opus` | architect, scientist, compute-scientist, debugger, security-reviewer, optimizer, pm, librarian, undergrad, user, web-design, spec-writer, tester, documenter, implementer, ffi-guard | judgment: design trade-offs, diagnosis, adversarial reasoning, artifact authorship |
-| `sonnet` | ci-guard, reviewer, janitor | mechanical: run tools, aggregate findings, pattern-match against fixed catalogs |
+| `opus` | architect, scientist, compute-scientist, debugger, security-reviewer, optimizer, pm, librarian, undergrad, user, web-design, spec-writer, tester, documenter, implementer, ffi-guard, harness-actor | judgment: design trade-offs, diagnosis, adversarial reasoning, artifact authorship |
+| `sonnet` | ci-guard, reviewer, janitor, harness-observer | mechanical: run tools, aggregate findings, pattern-match against fixed catalogs |
 | `haiku` | `/mol:impl-all` § 2b completion evaluator (prose-dispatched — no agent file) | binary ledger read against a fixed schema |
 
 `model: inherit` is not used under `plugins/mol/agents/` — every
