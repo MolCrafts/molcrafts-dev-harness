@@ -15,6 +15,8 @@ RED → GREEN → REFACTOR. **Test artifacts only** — never production code.
 
 **A — write** (`/mol:impl`, `/mol:debug`): failing unit tests first (or `regressions/` if task targets it). Run `$META.build.test_single`; confirm correct failure. Production = caller.
 
+The caller hands over a packet (`rules/agent-design.md` § Handoff packet): `file:line` pointers, the API shapes the tests assume, and each test's input and expected value where already known. Read the pointed ranges plus immediate call sites; derive only what the packet leaves open; search further only when the pointers fall short, and name the missing pointer in the report. `test_single` is the only command to run — no lint, format check, other build configuration, copied crate/checkout or alternate build directory (`rules/agent-design.md` § Verification tiers).
+
 **B — analyze** (`/mol:test`): read-only gaps — layout/naming, single-function scope, categories, determinism, FP tolerances, hard-coded regressions (no live third-party). No writes.
 
 ## Contract (unique knowledge)

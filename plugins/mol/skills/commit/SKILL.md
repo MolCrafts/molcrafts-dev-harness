@@ -42,7 +42,7 @@ Do **not** ask the user which files to include.
    pre-commit run
    ```
 
-   On failure → fix and re-stage, up to 3 cycles. Still red → **BLOCK**
+   On failure → fix, re-stage, and re-run only the failed hook ids (`rules/git-publish.md` § Re-running after a failed gate), up to 3 cycles. Still red → **BLOCK**
    (do not offer `--no-verify` here; that escape hatch lives only on
    `/mol:push` after the user explicitly accepts).
 3. Invoke `/mol:ship commit` for any extra commit-tier checks not in hooks.

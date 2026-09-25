@@ -28,7 +28,7 @@ in `git-publish.md`).
 
 ### Fix loop (≤ 3 cycles)
 
-Parse failures → fix mechanical issues (`/mol:debug` / simplify / format) → re-run. Still red:
+Parse failures → fix mechanical issues (`/mol:debug` / simplify / format) → re-run **only the failed hook ids** (plus hooks whose `files:` scope the fix touched; `rules/git-publish.md` § Re-running after a failed gate) — never the whole gate again. Still red:
 
 ```
 BLOCK PUSH — pre-commit still failing.

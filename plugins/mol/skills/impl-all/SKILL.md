@@ -8,12 +8,13 @@ argument-hint: "<spec-prefix or slug>"
 
 # /mol:impl-all — Batch Spec Chain Driver
 
-Drive an entire spec chain (`<base>-01-<phase>`, `<base>-02-<phase>`, …) by iterating `/mol:impl` on each spec in order — each `/mol:impl` run commits and auto-closes its own spec. All gating, testing, simplifying, committing, and status advancement is `/mol:impl`'s job — this skill only discovers the chain, keeps it moving, and independently verifies each step before advancing.
+Drive an entire spec chain (`<base>-01-<phase>`, `<base>-02-<phase>`, …) by iterating `/mol:impl --chain` on each spec in order. Per spec, `/mol:impl` runs TDD with `$META.build.test_single` only and advances status; this skill independently verifies each step, then runs the chain-end pass once — simplify, docs, the full check + suite, one commit, and every close (§ 2d).
 
 ```
 /mol:impl-all morse-bond
 → finds morse-bond-01-potential, morse-bond-02-gradient, morse-bond-03-optimization
-→ /mol:impl 01 → evaluator → /mol:impl 02 → evaluator → /mol:impl 03 → evaluator
+→ /mol:impl 01 --chain → evaluator → … → /mol:impl 03 --chain → evaluator
+→ chain end: simplify + docs → check + full suite → one commit → close all
 → reports chain verdict
 ```
 
@@ -50,7 +51,7 @@ For each spec, in sorted order (skip ones already terminal):
 ═══ [mol:impl-all] 2/3: morse-bond-02-gradient ═══
 ```
 
-**2a. Implement.** Invoke `/mol:impl <slug>` via the Skill tool. `/mol:impl` owns all guardrails (stage gate, science gate, scope classification, TDD, simplify, acceptance criteria, status advancement). Do not duplicate them here.
+**2a. Implement.** Invoke `/mol:impl <slug> --chain` via the Skill tool (a single-spec chain omits `--chain`: plain `/mol:impl` owns its own gate, commit and close). `/mol:impl` owns the per-spec guardrails (stage gate, science gate, scope classification, TDD, acceptance criteria, status advancement). Do not duplicate them here.
 
 **2b. Evaluate (independent check — the `/goal` analogue).** After `/mol:impl` exits, do **not** trust its self-report. Dispatch a lightweight read-only evaluator subagent via the Agent tool with **`model: haiku`** (per `plugins/mol/rules/model-policy.md`). This mirrors what `/goal` does between turns — a fast, independent model confirms the completion condition — except scoped per spec instead of per turn. The evaluator is **read-only**; it never edits specs, acceptance files, or code.
 
@@ -88,9 +89,16 @@ Return strictly this shape:
 **2c. Act on the verdict:**
 
 - `done` → next spec. (`/mol:impl` § 4c already committed and deleted the spec — no commit here.)
-- `code-complete` → auto-invoke owed evaluators then `/mol:close <slug>` again (self-repair). Still code-complete after close → **stop the chain** with the close failure (do not ask the human to close). Close success → next spec.
+- `code-complete` → in chain mode this is the expected state when every pending criterion carries `note: chain-end gate` → next spec. Any other pending criterion → auto-invoke its owed evaluator; still pending → **stop the chain**.
 - `stalled` → **stop the chain.** `/mol:impl` hit a blocker; later specs may depend on this one. Do not skip ahead.
 - `anomaly` → **auto-invoke `/mol:close <slug>`** as self-repair. Close succeeds → treat as done, continue. Close refuses → **stop the chain** with the discrepancy (no human close recipe).
+
+**2d. Chain end — once for the whole chain.** After the last spec:
+
+1. `/mol:simplify` on the union of files the chain touched; `/mol:docs` Mode A when any spec added public surface (heuristic in `/mol:impl` § 3c).
+2. `$META.build.check` + `$META.build.test`. On failure fix and re-run only what failed (`rules/git-publish.md` § Re-running after a failed gate).
+3. Flip every `note: chain-end gate` criterion to `verified` (or `failed`), then invoke `/mol:commit` once for the chain — the one checkpoint.
+4. `/mol:close <slug>` for each spec in order.
 
 ### 3. Report
 
@@ -114,9 +122,9 @@ If the chain stopped early, print the hard failure once (no human close menu). E
 
 - **Never ask questions.** Autonomous batch mode — drive forward, report at end.
 - **Drive in-loop, not via `/goal`.** A skill cannot fire the `/goal` built-in (user-invoked only). Iterate the chain inside this skill's own agentic loop using the Skill tool for `/mol:impl` (and `/mol:close` on `anomaly`). Claude Code's automatic context summarization keeps a long chain going across turns; no `/goal` substrate is needed or available.
-- **Don't duplicate `/mol:impl`.** All gates, TDD, simplify, acceptance, commit, and status logic belongs to `/mol:impl`. This skill only iterates and verifies.
+- **Don't duplicate `/mol:impl`.** Per-spec TDD, acceptance and status logic belongs to `/mol:impl`. This skill iterates, verifies, and owns the chain-end pass (§ 2d).
 - **Trust the evaluator, not the self-report.** Per-spec advancement is gated on the independent Haiku-class evaluator subagent reading the actual spec + acceptance ledger — the same independence principle as `/goal`'s between-turn check.
 - **Stop on stall.** If the evaluator returns `stalled`, stop the chain — later specs may depend on this one. `anomaly` is first self-repaired via `/mol:close`; stop only if close refuses.
-- **Auto-close every spec.** `/mol:close` runs after each spec (evaluators + agent-auto attestation). Never leave a close step for the human.
-- **One checkpoint per spec — owned by `/mol:impl`.** Its § 4c/§ 4d finalize commits every spec, so the chain stays reviewable mid-flight; this skill never invokes `/mol:commit` or duplicates the close.
+- **Auto-close every spec.** `/mol:close` runs for each spec at chain end (evaluators + agent-auto attestation). Never leave a close step for the human.
+- **One checkpoint per chain.** Under `--chain`, `/mol:impl` neither commits nor closes; § 2d runs the gate once, commits once and closes every spec. The inner loop runs only `$META.build.test_single` (`rules/agent-design.md` § Verification tiers).
 - **Read-only evaluator.** The evaluator subagent inspects and reports; it never edits specs, acceptance files, or code. Only `/mol:impl` (and `/mol:close`) may mutate status.

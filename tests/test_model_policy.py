@@ -151,6 +151,32 @@ class ModelPolicyTests(unittest.TestCase):
             "implementer must state it never reverts (caller owns revert).",
         )
 
+    def test_orchestration_speed_rules(self) -> None:
+        design = _read(RULES_DIR / "agent-design.md")
+        for heading in ("## Handoff packet", "## Verification tiers"):
+            self.assertIn(
+                heading,
+                design,
+                f"agent-design.md must define {heading!r}.",
+            )
+        publish = _read(RULES_DIR / "git-publish.md")
+        self.assertIn(
+            "Re-running after a failed gate",
+            publish,
+            "git-publish.md must pin re-running only the failed hooks.",
+        )
+        implementer = _read(AGENTS_DIR / "implementer.md")
+        self.assertIn(
+            "## Fix mode",
+            implementer,
+            "implementer.md must define the /mol:debug fix mode.",
+        )
+        self.assertNotIn(
+            "Run `$META.build.check` on touched files",
+            implementer,
+            "implementer must not lint per task (Verification tiers).",
+        )
+
     def test_model_policy_rules_file(self) -> None:
         path = RULES_DIR / "model-policy.md"
         self.assertTrue(path.exists(), f"{path} must exist.")
@@ -192,7 +218,23 @@ class ModelPolicyTests(unittest.TestCase):
             "debug/SKILL.md must preserve the read-only diagnose path.",
         )
 
+        self.assertIn(
+            "mode: fix",
+            debug,
+            "debug/SKILL.md Step 3 must offer the one-agent small-fix path.",
+        )
+        self.assertIn(
+            "--chain",
+            impl,
+            "impl/SKILL.md must defer the gate, commit and close under --chain.",
+        )
+
         impl_all = _read(SKILLS_DIR / "impl-all" / "SKILL.md")
+        self.assertIn(
+            "`/mol:commit` once",
+            impl_all,
+            "impl-all § 2d must commit the chain exactly once, at chain end.",
+        )
         self.assertIn(
             "model: haiku",
             impl_all,
@@ -202,8 +244,8 @@ class ModelPolicyTests(unittest.TestCase):
         self.assertNotIn(
             "/mol:commit -m",
             impl_all,
-            "impl-all must not invoke /mol:commit — /mol:impl owns the "
-            "per-spec checkpoint (double-commit regression guard).",
+            "impl-all commits only in § 2d, once; /mol:impl --chain never "
+            "commits (double-commit regression guard).",
         )
         self.assertNotIn(
             "then `/mol:commit`",

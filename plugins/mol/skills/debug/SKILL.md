@@ -36,8 +36,10 @@ bugs are always in scope. Stage tightens scope discipline at Step 3 per
 
 ### 1. Reproduce
 
-Run `$META.build.check` + `$META.build.test` (or the single-test form
-when the failure is one specific test). Confirm the reported symptom.
+Run the smallest command that shows the symptom: `$META.build.test_single`
+when it is one test, `$META.build.test` when it is a test failure of unknown
+extent, `$META.build.check` only when the symptom *is* a lint / format /
+type failure. Confirm the reported symptom.
 
 Other failures discovered while reproducing are **not** ignored (iron
 law): list them; fix them in this run if they share a root cause or
@@ -52,6 +54,14 @@ before Step 3. Do not patch a symptom you have not observed.
 If the conversation or `$ARGUMENTS` already contains a debugger report (a
 block with **Root cause** / **Fix recommendation** / **Preventive
 measure**), consume it directly — do **not** re-delegate.
+
+**Small fix → skip the separate diagnosis.** When the reproduction already
+localises the bug — one failing test or a symptom with a `file:line` — and
+the fix is expected in at most two production files with no public
+signature change, go straight to Step 3's fix mode: one `implementer`
+diagnoses, writes the regression test and patches
+(`rules/agent-design.md` § Why is `tester` the exception?). `--diagnose-only`
+and anything larger take the `debugger` path below.
 
 Otherwise delegate to the `debugger` agent with the symptom from
 `$ARGUMENTS`. It classifies (build / test / runtime), gathers evidence,
@@ -73,7 +83,17 @@ plan for Step 3 — do **not** re-derive the diagnosis.
 
 ### 3. Patch
 
-Delegate the patch to the `implementer` agent: the debugger report as the
+Every delegation carries the handoff packet (`rules/agent-design.md`
+§ Handoff packet): the `file:line` ranges, the shapes, the debugger report
+verbatim, the reproduction command.
+
+**Small-fix path (fix mode).** One `implementer` invocation with
+`mode: fix`: it confirms the root cause, writes one new regression test
+that fails for the reported reason, then patches. It returns `blocked:`
+with its diagnosis when the fix outgrows fix mode — then continue with
+the full path below, reusing that diagnosis.
+
+**Full path.** Delegate the patch to the `implementer` agent: the debugger report as the
 plan, the Step 1 reproduction (or the regression test below) as the RED
 test, the smallest fix surface as the scope — bounded by the stage
 discipline above.
@@ -87,13 +107,16 @@ discipline above.
   goldens only.
 - **Type safety.** No escape-hatch top types (`any` / `Any` /
   `interface{}` / `dyn Any`); no dropping existing annotations.
-  `implementer` enforces this; the Step 4 gate verifies. Exception:
+  `implementer` enforces this; the commit gate verifies. Exception:
   deserialization at a system boundary, narrowed immediately.
 
 ### 4. Verify
 
-Full `$META.build.test` (no regressions) + `$META.build.check`
-(format / lint). Both green before reporting success.
+The regression test via `$META.build.test_single`, then `$META.build.test`
+once (no regressions). `$META.build.check` is the commit gate's job
+(`rules/agent-design.md` § Verification tiers) — do not run it here unless
+the bug was a lint / format / type failure. Green before reporting
+success.
 
 Still red after the patch → report the failure output; do not declare
 the bug fixed and do not weaken the test to make it pass.

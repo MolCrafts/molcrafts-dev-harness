@@ -24,7 +24,7 @@ Orchestration mode per `plugins/mol/rules/model-policy.md`: this loop plans, rou
 
 ### 1a. Scope & branch
 
-If chain prefix detected (≥2 matching specs) → invoke `/mol:impl-all` and stop.
+If chain prefix detected (≥2 matching specs) → invoke `/mol:impl-all` and stop. A call carrying `--chain` names one spec slug and never forwards — it is `/mol:impl-all` driving that spec.
 
 Classify against `$META.arch.style`: SMALL (<3 files, existing pattern) / MEDIUM (3–8 files, new pattern) / LARGE (new top-level concept).
 
@@ -76,19 +76,21 @@ For each unchecked task, in order:
 
 First **Write failing tests** task → delegate to `tester` agent (write-mode). Unit tests **only** under `tests/`, path mirroring `src/` (`src/foo/boo.py` → `tests/test_foo/test_boo.py`), types mirrored (`FooClass` → `TestFooClass`), **single-function** tests of **one module** — no e2e under `tests/`. Unit green is `$META.build.test_single` only (`law.md:tests-owned-behavior` / locality of change — not full suite). Categories: basics, edge cases, immutability, domain validation (if `$META.science.required`) with hard-coded goldens. Run `$META.build.test_single`; confirm red. **Tick immediately.**
 
+Every delegation in § 2 carries the handoff packet (`rules/agent-design.md` § Handoff packet): the `file:line` ranges the task touches or depends on, the API shapes, each test's input and expected value when known, prior findings verbatim, and the verification command. An agent without pointers spends most of its time re-reading the codebase.
+
 ### 2b. Implement (GREEN)
 
 Task targets `regressions/` (public-API regression example) → test artifact only: delegate to `tester` (write-mode, § Regression examples). Must hard-code reference values (offline third-party capture if needed — **no** live third-party imports/subprocesses). Run standalone, tick on pass. `implementer` never writes it.
 
 For each remaining task:
-1. Delegate to `implementer` agent with: spec path, the task line, the RED test reference from 2a (command in `$META.build.test_single` form), the spec's Files section as scope, and the layer from 1d.
+1. Delegate to `implementer` agent with: spec path, the task line, the RED test reference from 2a (command in `$META.build.test_single` form), the spec's Files section as scope, the layer from 1d, and the handoff packet.
 2. `verdict: green` → run `$META.build.test_single` yourself to confirm (never trust the self-report), then **tick that task's box** — ticking stays here; `implementer` never ticks.
 3. `still-red` → re-delegate once with the failure output attached; still red after the retry → stop, re-invoke `/mol:spec` (supersede).
 4. `blocked:` → surface the blocker verbatim and stop (missing RED test → run 2a for that symbol; spec ambiguity → `/mol:spec`).
 
 Revert on regression is this skill's job (and `/mol:simplify`'s inside § 3); `implementer` never reverts.
 
-Every line — production or test — satisfies `$META.build.check`. No escape-hatch types (`Any`, `any`, `interface{}`).
+Every line — production or test — satisfies `$META.build.check` (verified by the commit gate, never run per task — `rules/agent-design.md` § Verification tiers). No escape-hatch types (`Any`, `any`, `interface{}`).
 
 MEDIUM/LARGE: after impl tasks, re-delegate to `architect` for post-impl layer check.
 
@@ -96,9 +98,11 @@ MEDIUM/LARGE: after impl tasks, re-delegate to `architect` for post-impl layer c
 
 ## 3. Verify, simplify, docs
 
+**Chain mode** (`/mol:impl <slug> --chain`, passed by `/mol:impl-all`): skip § 3a–3c. The chain's check, full suite, simplify and docs pass run **once**, at chain end (`/mol:impl-all` § 2d) — per spec they would rebuild and re-lint the same tree N times.
+
 ### 3a. Verify
 
-Run in parallel: `$META.build.check` + `$META.build.test` (full suite) + the spec's `regressions/` example(s) standalone. A failing regression blocks finalize exactly like a failing unit test — the feature is not delivered until the regression reproduces its **hard-coded** reference values.
+Run in parallel: `$META.build.check` + `$META.build.test` (full suite) + the spec's `regressions/` example(s) standalone. A failing regression blocks finalize exactly like a failing unit test — the feature is not delivered until the regression reproduces its **hard-coded** reference values. A failing hook or test is re-verified alone after the fix (`rules/git-publish.md` § Re-running after a failed gate).
 
 ### 3b. Simplify
 
@@ -162,6 +166,10 @@ All hold:
 6. Never delete spec/acceptance/INDEX directly on this path — deletion is `/mol:close`'s job.
 
 For chained specs, exit cleanly after commit + auto-close — don't start the next spec (that's `/mol:impl-all`'s job).
+
+### 4e. Chain mode
+
+Under `--chain`: update the ledger (§ 4a) for every criterion the unit tests settle; criteria that need the full gate stay `pending` with `note: chain-end gate`. Mark `status: code-complete`. **No commit, no close** — `/mol:impl-all` § 2d commits the chain once and closes every spec after its gate.
 
 ---
 

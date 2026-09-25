@@ -33,7 +33,7 @@ user-approval gate between drafting and persisting.
 | Agent | Produces | Why writing belongs in the agent |
 |---|---|---|
 | `tester` | test code (RED tests) | the produced test *is* the verification mechanism — running it is the gate. No external orchestration needed for the write itself. |
-| `implementer` | production source (one spec task / one fix patch) | the RED test written by `tester` *is* the gate for the write — the same mechanism that justifies `tester`'s write access; the calling skill still runs the full-suite gate and owns revert. |
+| `implementer` | production source (one spec task / one fix patch); in `/mol:debug` **fix mode**, also the one new regression test that fix needs | the RED test *is* the gate for the write — the same mechanism that justifies `tester`'s write access; the calling skill still runs the gate and owns revert. |
 | `documenter` | docstrings + tutorials | docs don't change runtime behavior — zero behavioral risk. |
 
 #### Producer-return (no write tools)
@@ -108,9 +108,59 @@ gate is needed.
 `implementer` extends the same argument to production code:
 unlike a reviewer finding, a spec task *is* 1:1 with its patch,
 and the gate already exists — the RED test written by `tester`
-plus the calling skill's full-suite gate. The skill still owns
+plus the calling skill's gate. The skill still owns
 tick, commit, and revert; `implementer` never does any of the
 three.
+
+**Fix mode** (`/mol:debug` small-fix path) is the one place a
+single `implementer` writes both the regression test and the patch.
+A local bug is one reading of one code region; splitting it across
+`debugger` → `tester` → `implementer` makes three agents read the
+same lines. The order still holds inside the one invocation: the new
+test is written first and must fail for the reported reason before
+any production line changes. Existing tests are never edited, and a
+feature (spec) task always keeps `tester` and `implementer` separate.
+
+## Handoff packet (every delegation)
+
+An agent starts with no context, so whatever the orchestrator does not
+hand over, the agent re-discovers by reading — measured at 50–64 tool
+calls / ~11 min for a RED-test round without pointers versus 17–28 calls
+/ 2–4 min with them. The orchestrator reads once and hands over:
+
+1. **Pointers** — every `file:line` range the work touches or depends
+   on (the symbol to change, its callers, the fixture to copy, the
+   existing test module), not just a spec path.
+2. **Shapes** — the exact types, signatures and names the agent must
+   use or produce (the API a RED test assumes; the API an implementer
+   must satisfy).
+3. **Assertions** — for a test round, each test's input and expected
+   value whenever the spec, a diagnosis or the orchestrator already
+   knows it. The agent derives only what nobody has derived yet.
+4. **Prior findings verbatim** — a debugger report, a previous agent's
+   notes, a reviewer's `file:line` — never paraphrased away.
+5. **The verification command, and what not to run** — the inner loop
+   is `$META.build.test_single` (see "Verification tiers" below).
+
+The agent reads the pointed ranges plus immediate call sites. When the
+pointers turn out insufficient it may search further, and it names the
+missing pointer in its report so the orchestrator's next packet carries
+it.
+
+## Verification tiers
+
+Each tier runs once per its trigger, never earlier:
+
+| Trigger | Runs | Never runs here |
+|---|---|---|
+| each task / fix inside a loop | `$META.build.test_single` on the touched units | `$META.build.check` (lint/format/type), the full suite, other build configurations or binders |
+| commit | `pre-commit` hooks (`$META.build.check` lives here) | — |
+| end of a spec chain (`/mol:impl-all`), push | `$META.build.check` + `$META.build.test`, then the push-tier gate | — |
+
+A tool that recompiles under a different configuration (a linter
+driver, a docs build, a second feature set or target) is a second full
+build; keeping it out of the loop is most of the loop's speed.
+
 
 ## Adding a new agent
 

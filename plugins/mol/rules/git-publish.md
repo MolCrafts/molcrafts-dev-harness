@@ -37,6 +37,17 @@ watchers with email; local parity is the primary defense.
 Commit tier runs the fast subset (hooks on staged files + `/mol:ship commit`).
 Push tier is the full local CI-equivalent wall.
 
+### Re-running after a failed gate
+
+A gate that fails is fixed and then re-run **by hook id**, never as a
+whole: `pre-commit run <id> [<id>…] --all-files [--hook-stage <stage>]`
+(`prek run …` alike) for every hook that failed, plus every other hook
+whose `files:` scope contains a non-documentation file the fix changed.
+Hooks that passed and whose inputs the fix did not touch are not
+re-run — their earlier result still stands. A fix confined to comments
+or docs re-runs only the hook that failed. (Measured: a rustdoc link fix
+re-verified in 6 s by its own hook; the whole push gate is ~7.6 min.)
+
 ## Iron law B — PR-first landing (never direct-push to upstream)
 
 To put commits on the **canonical** default branch:

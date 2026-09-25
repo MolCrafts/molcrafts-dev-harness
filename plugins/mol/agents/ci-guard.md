@@ -61,7 +61,7 @@ Flag explicitly even when gate passes — these are why "works on my machine" is
 1. Read CLAUDE.md, parse `$META`. Detect CI. Record matrix / runners / steps / secrets / services.
 2. Accept tier from caller (commit / push / merge). Run exactly that. Never escalate.
 3. Execute and capture. Tee stdout/stderr to temp log. Never swallow output — caller wants to quote first failing line.
-4. Classify failures. Each gets emoji severity + `Suggested agent:` line (test → tester; lint → fix; arch → architect; doc drift → documenter).
+4. Classify failures. Each gets emoji severity + `Suggested agent:` line (test → tester; lint → fix; arch → architect; doc drift → documenter), and the exact re-run command for that failure alone (`pre-commit run <hook-id> --all-files [--hook-stage …]`, or the single test id) — the caller re-verifies a fix with it, not with the whole tier (`rules/git-publish.md` § Re-running after a failed gate).
 5. Report drift. CI-only failure modes that apply even if gate passed. Only `merge` does full sweep; `commit` and `push` stop at commands they ran.
 
 ## Output
