@@ -1,0 +1,5 @@
+interface:
+  display_name: "Release"
+  short_description: "Ecosystem release: gates + fork push + PR + green merge + tag"
+policy:
+  allow_implicit_invocation: false

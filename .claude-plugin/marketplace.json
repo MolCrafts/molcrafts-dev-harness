@@ -1,0 +1,22 @@
+{
+  "name": "molcrafts-dev",
+  "description": "Claude Code-first workflows and maintenance tooling for MolCrafts scientific software projects.",
+  "owner": {
+    "name": "MolCrafts"
+  },
+  "plugins": [
+    {
+      "name": "mol",
+      "source": "./plugins/mol",
+      "description": "Project workflow toolkit \u2014 29 skills + 20 single-axis agents organized around the planner\u2192generator\u2192evaluator harness pattern. Adapts per project via mol_project frontmatter.",
+      "version": "0.19.0",
+      "keywords": [
+        "molecular",
+        "workflow",
+        "scientific-computing",
+        "molcrafts",
+        "harness-engineering"
+      ]
+    }
+  ]
+}
