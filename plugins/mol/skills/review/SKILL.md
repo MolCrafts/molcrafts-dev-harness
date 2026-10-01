@@ -40,3 +40,13 @@ You render the verdict:
 ```
 /mol:review: <N> files, axes <list>, <verdict>, 🚨<n> 🔴<n> 🟡<n> 🟢<n>
 ```
+
+## Example
+
+`/mol:review src/box.py` on a diff of that file, no `--axis`. Dispatch `architect` and `janitor` in one message. Render:
+
+```
+/mol:review: 1 files, axes arch hygiene, APPROVE, 🚨0 🔴0 🟡1 🟢0
+```
+
+Unknown `--axis=spell` → refuse and list the table. Do not score it. An agent that does not return → that axis is not run; say so. Do not invent its findings. No paths and an empty `git diff` → stop with "scope is empty".

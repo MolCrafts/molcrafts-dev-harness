@@ -1,6 +1,6 @@
 ---
 name: perf
-description: "External performance/scientific evaluator — verifies `type: scientific` and `type: performance` criteria from `<slug>.acceptance.md` by running the project's separate `bm_*` pytest-benchmark suite (e.g. `bm-molrs-molpy/`), which pairs each kernel with an equality check against a user-named reference library (freud, scipy, LAMMPS, …). The bench repo owns the test bodies, reference imports, tolerances, and result storage; this skill selects tests per criterion, runs pytest, reports the verdict, and updates `acceptance.md`. Skips cleanly when no bench repo is configured. Replaces the former mol:bench skill name (slash command retired)."
+description: "External performance/scientific evaluator — verifies `type: scientific` and `type: performance` criteria from the spec acceptance file by running the project's separate `bm_*` pytest-benchmark suite (e.g. `bm-molrs-molpy/`), which pairs each kernel with an equality check against a user-named reference library (freud, scipy, LAMMPS, …). The bench repo owns the test bodies, reference imports, tolerances, and result storage; this skill selects tests per criterion, runs pytest, reports the verdict, and updates `acceptance.md`. Skips cleanly when no bench repo is configured. Replaces the former mol:bench skill name (slash command retired)."
 argument-hint: "<spec-slug> [<criterion-id>]"
 ---
 
@@ -88,7 +88,7 @@ End with one-line summary:
 mol_project:
   bench:
     # required: absolute path to the external bench repo
-    # (e.g. /Users/.../bm-molrs-molpy)
+    # (e.g. /abs/path/bm-molrs-molpy)
     repo: <abs path>
 
     # optional: subpath inside the bench repo to scope collection to

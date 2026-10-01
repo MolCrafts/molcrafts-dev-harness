@@ -1,6 +1,6 @@
 ---
 name: spec
-description: "Requirement → spec + acceptance. Librarian, then one grill, then draft. Design-mode gates persist; clean auto-invokes impl-all. Tier C: 落盘/写 spec. Never silent from discuss."
+description: "Use when turning a requirement into a spec and acceptance. Librarian, then one grill, then draft. Design-mode gates persist; clean auto-invokes impl-all. Tier C: 落盘/写 spec. Never silent from discuss."
 argument-hint: "<feature description>"
 ---
 
@@ -64,3 +64,11 @@ Paths, task count, criteria by type, `clean` or `superseded`.
 `clean` or `superseded` → auto-invoke `/mol:impl-all` with the slug or chain base. Parked → do not implement.
 
 Chinese input → body in Chinese. Frontmatter keys, INDEX, and Tasks verb-prefixes stay English.
+
+## Examples
+
+These select this skill: "add periodic wrap for positions.", "落盘 box wrap", "写 spec：周期边界". "该不该做 wrap" is `/mol:discuss`. A bug in wrap is `/mol:debug`.
+
+`/mol:spec add periodic wrap for positions.` Slug `box-wrap`. Librarian returns `reuse: molpy.Box.wrap`. Grill, post-librarian, asks only the boundary (orthorhombic only). `spec-writer` returns `ok`. Design-mode is 🟢. Persist `.claude/specs/box-wrap.md` and `box-wrap.acceptance.md`, one INDEX line, then `/mol:impl-all box-wrap`.
+
+Stop and do not draft when that slug already exists and the user did not say supersede, when grill returns redirected, or when design-mode is still 🚨/🔴 after one repair.

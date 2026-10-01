@@ -1,6 +1,6 @@
 ---
 name: bootstrap
-description: "Initialize or repair a repo harness (CLAUDE.md, .claude/notes, .claude/specs). Idempotent. Never writes project source."
+description: "Use when initializing or repairing a repo harness (CLAUDE.md, .claude/notes, .claude/specs). Idempotent. Do not use for project source."
 argument-hint: "[<project-root>]"
 ---
 
@@ -122,7 +122,7 @@ Wait for explicit approval before writing.
 
 Write only the approved set. Use stable markers (`<!-- mol:bootstrap:managed begin -->` … `end -->`) for managed sections so re-runs update in place.
 
-For CLAUDE.md, prefer a short router (template at bottom). Don't turn it into a giant prompt.
+For CLAUDE.md, prefer a short router (`references/claude-md-template.md`). Don't turn it into a giant prompt.
 
 If a target path exists with content you'd replace, **ask per-file**. Never silently overwrite.
 
@@ -160,7 +160,7 @@ Condensed from `rules/design-principles.md`. Focus on structural drift; skip con
 - **Law** — `.claude/notes/law.md` must exist and hold every rule, one
   `<!-- mol:law:id:<slug> -->` marker each, with `## Law (never
   violated)` in CLAUDE.md as its one-line-per-law index. Missing file →
-  🟡. A default id present in this SKILL.md's law.md template but
+  🟡. A default id present in `references/law-template.md` but
   absent from the project's `law.md` → 🟡 append that template body
   (never reword an id that already exists). A rule stated **only**
   outside `law.md` (a surviving `design-preferences.md`, an absolute in
@@ -169,7 +169,7 @@ Condensed from `rules/design-principles.md`. Focus on structural drift; skip con
   the one-liner. Never demote or reword a law during repair.
 - **No second rules tier** — a `## Design preferences (default)` section
   or a surviving `.claude/notes/design-preferences.md` is 🟡: fold its
-  rules into `law.md` as prohibitions (see migration table). Agents may
+  rules into `law.md` as prohibitions (`references/migration-table.md`). Agents may
   not be handed two rulebooks of differing force.
 
 For projects with `mol_project:` frontmatter:
@@ -192,7 +192,7 @@ For projects with `mol_project:` frontmatter:
 - Managed sections use stable markers.
 
 **Layout migrations needed:**
-- Check against migration table (§ Migration table). Any `From (legacy)` path that exists → flag for § 5.
+- Check against `references/migration-table.md`. Any `From (legacy)` path that exists → flag for § 5.
 
 #### 4.3 Output check findings
 
@@ -225,10 +225,10 @@ Apply structural repairs derived from § 4 findings. Only auto-fix what the vers
 Build "current version's expected shape" from plugin source:
 
 - frontmatter contract from `rules/claude-md-metadata.md`
-- managed-section template body from this SKILL.md's CLAUDE.md template (§ below)
-- migration table (§ below)
+- managed-section template body from `references/claude-md-template.md`
+- migration table from `references/migration-table.md`
 - structural invariants (spec INDEX consistency, stable marker pairing)
-- default law ids from this SKILL.md's law.md template (`<!-- mol:law:id:* -->`)
+- default law ids from `references/law-template.md` (`<!-- mol:law:id:* -->`)
 
 Walk harness on disk; produce **structural diff**:
 
@@ -277,13 +277,13 @@ Per approved item:
 - **frontmatter (install)** — write fresh `mol_project:` YAML at top of CLAUDE.md per current contract. Preserve any pre-existing first-line content by moving below new frontmatter.
 - **frontmatter (field rename/repair)** — rewrite only affected fields. Preserve user-customization fields the contract doesn't enforce.
 - **managed-section refresh** — replace contents between stable markers with current template body.
-- **default-law absorb** — for each `<!-- mol:law:id:<slug> -->` in this
-  SKILL.md's law.md template that is absent from the project's
+- **default-law absorb** — for each `<!-- mol:law:id:<slug> -->` in
+  `references/law-template.md` that is absent from the project's
   `.claude/notes/law.md`, **append** that id's template heading + body.
   Never rewrite, reorder, or reword a law whose id already exists.
 - **orphan-marker repair** — only when context unambiguous; otherwise demote to manual TODO.
 - **INDEX rebuild** — regenerate from actual spec files.
-- **migration** — `git mv` (or `mv`) per table; patch INDEX entries that referenced old path.
+- **migration** — `git mv` (or `mv`) per `references/migration-table.md`; patch INDEX entries that referenced old path.
 
 After each apply, one-line action log.
 
@@ -317,217 +317,18 @@ End with one-line summary.
 
 ---
 
-## CLAUDE.md template (router)
+## Templates
 
-Managed body is the **default MolCrafts project contract**. Re-running
-bootstrap refreshes everything between the markers. Project-specific overrides
-go **outside** the markers, or via `/mol:note` with an explicit
-functional-style exception.
+The files this skill writes are the references below. Copy them. Do not reword a template in this procedure.
 
-**CLAUDE.md is an index, not the rulebook.** One line per rule; the full text
-lives in `.claude/notes/law.md`, which bootstrap writes on the create path. A managed body that grows past ~60 lines has stopped being a
-router — move the prose to notes and leave the pointer.
+| File | Use |
+|---|---|
+| `references/claude-md-template.md` | Managed CLAUDE.md body. Refresh only between the markers. |
+| `references/law-template.md` | Create-path `law.md`, and every default `<!-- mol:law:id:* -->` absorbed on update. |
+| `references/migration-table.md` | The only legal layout moves. |
+| `references/starters.md` | Fresh `.claude/notes/` and `.claude/specs/` trees. |
 
-```markdown
-# CLAUDE.md
-
-<!-- mol:bootstrap:managed begin -->
-<!-- This block is regenerated by /mol:bootstrap. Custom content goes
-     OUTSIDE these markers. -->
-
-## What this repo is
-
-<one paragraph: what the project does, who it serves, language/stack>
-
-## Where things live
-
-- Source code: `<path>`
-- Tests: `tests/` (mirrors source: `src/foo/boo.py` → `tests/test_foo/test_boo.py`)
-- Public documentation: `docs/`
-- Passive project knowledge (notes, decisions, debt, blueprint): `.claude/notes/`
-- Active runtime specs (alive, deleted on completion): `.claude/specs/`
-- Claude Code runtime config (agents, skills, hooks, settings):
-  `.claude/agents/`, `.claude/skills/`, `.claude/hooks/`, `.claude/settings.json`
-
-## Law (never violated)
-
-Full text: `.claude/notes/law.md`. Outranks scope, minimal-diff, and
-convenience. There are no overridable defaults — a carve-out exists only if the
-operator wrote one into `law.md` naming the subsystem. An agent never grants
-itself one. CLAUDE.md carries **one line per law**; it is an index, not the
-rulebook.
-
-- **Conceptual integrity.** One problem, one coherent model — never parallel abstractions for the same concept.
-- **Architecture first.** Simple shape before local convenience — never a layer only for later or unmeasured performance.
-- **Earn complexity.** Every extra concept is paid for by demonstrated pressure.
-- **Locality of change.** A local requirement requires a local change — never lockstep, never cycles.
-- **Hide decisions, expose contracts.** Never leak representation or lifecycle across a boundary.
-- **Dependencies follow policy.** Mechanism depends on policy, never the reverse.
-- **Primitive public surface.** Orthogonal primitives; composition is the caller's job.
-- **Explicit flow.** Required ordering and ownership are enforceable — never a ritual the caller can skip.
-- **One home per fact.** Authority is unique. Representation may be copied; authority may not.
-- **No silent debt.** Rot in a file you are editing is fixed or reported with path:line.
-- **Tests verify owned behavior.** Tests belong to the owner of the behavior; unit-only by default.
-
-<add project invariants here — public APIs, on-disk formats, wire contracts.
-Concrete prohibitions, one line each; body goes in law.md>
-
-
-## Default workflow
-
-For non-trivial work, prefer:
-1. `/mol:spec` for a feature, `/mol:debug` for a bug
-2. commit happens inside impl; push with `/mol:push`
-3. `/mol:review` when you ask for it
-4. `/mol:note` when a rule is decided
-
-<!-- mol:bootstrap:managed end -->
-
-<!-- Free-form additions below this line are preserved across re-runs.
-     If a section grows past a screen, promote to .claude/notes/<topic>.md. -->
-```
-
-If user opts into `mol` plugin contract: prepend `mol_project:` YAML per `rules/claude-md-metadata.md`; route body references to chosen `notes_path` and `specs_path`. Set `arch.rules_section: "## Law (never violated)"` unless the project already has a richer Architecture heading (then point `rules_section` at that heading **and** keep the Law index in the managed body — agents always load `law.md` when present). Default `stage: experimental` (right answer pre-1.0; per `rules/stage-policy.md` allowed values are `experimental`, `beta`, `stable`, `maintenance`). If Step 1 found `1.x.y` on disk (`pyproject.toml` / `Cargo.toml` / `package.json`), surface and ask whether `stable` instead — still default `experimental` if no pick.
-
----
-
-## .claude/notes/law.md (canonical body)
-
-Written on create. On update, append any missing `<!-- mol:law:id:* -->`. Never reword an id that already exists.
-
-Each law is one prohibition. A rule that names no forbidden design is not a law. Carve-outs live in § VII and name the subsystem. YAGNI, SOLID, and DRY do not outrank a law.
-
-```markdown
-# Software Engineering Laws
-
-Every rule here outranks scope and convenience. CLAUDE.md indexes one line per law.
-Adding, changing, or repealing a law is `/mol:note`. No skill retires a law.
-
-<!-- mol:law:id:conceptual-integrity -->
-## 1. Conceptual integrity
-
-Never create a second abstraction, alias, or layer for a concept that already exists.
-
-<!-- mol:law:id:architecture-first -->
-## 2. Architecture first
-
-Never add a layer whose only justification is later use or unmeasured performance.
-
-<!-- mol:law:id:earn-complexity -->
-## 3. Earn complexity
-
-Never generalize, add a knob, or add an extension point without a present caller.
-
-<!-- mol:law:id:locality-of-change -->
-## 4. Locality of change
-
-Never require unrelated modules to change together, and never introduce a cycle. A unit goes green with `$META.build.test_single` and fakes. If it needs the whole graph, the boundary is wrong.
-
-<!-- mol:law:id:hide-decisions -->
-## 5. Hide decisions, expose contracts
-
-Never leak representation, lifecycle, or storage across a boundary.
-
-<!-- mol:law:id:dependencies-follow-policy -->
-## 6. Dependencies follow policy
-
-Never let domain code depend on UI, a serialization format, a language binding, or a framework that then defines the semantics.
-
-<!-- mol:law:id:primitive-surface -->
-## 7. Primitive public surface
-
-Never ship an all-in-one façade or a second public name that becomes its own contract.
-
-<!-- mol:law:id:explicit-flow -->
-## 8. Explicit flow
-
-Never rely on hidden context or on a step the caller can forget.
-
-<!-- mol:law:id:one-home -->
-## 9. One home per fact
-
-Never keep two writable copies of the same fact. A serialization copy is fine; a second owner is not.
-
-<!-- mol:law:id:no-silent-debt -->
-## 10. No silent debt
-
-Rot in a file you are editing is fixed or reported with path:line. Never skip-mark it, never weaken an assert, never widen the edit to files you are not already changing.
-
-<!-- mol:law:id:tests-owned-behavior -->
-## 11. Tests verify owned behavior
-
-Tests live with the owner of the behavior. `tests/` is unit tests of one module. Broader scenarios go under `regressions/` with a stated reason.
-
-# VII. Exceptions
-
-A violation is recorded here, naming the law, the subsystem, the evidence, and the removal condition. An agent does not grant one.
-
-# VIII. Heuristics
-
-YAGNI, SOLID, and DRY are hints. They do not beat a law above.
-
-<!-- project invariants: one `<!-- mol:law:id:<slug> -->` and one prohibition each -->
-```
-
-## .claude/notes/ starter (if creating fresh)
-
-```
-.claude/notes/
-  README.md             # what this directory is for, how to navigate
-  law.md                # the inviolable rules + project invariants. Outranks
-                          every other file here. /mol:compact may absorb into
-                          it, never delete from it.
-  notes.md              # evolving decisions, captured by /mol:note
-  architecture.md       # project blueprint — modules, public surface, style,
-                          layer roles. Stub points at /mol:map; populated
-                          by /mol:map. Consumed by `librarian` during
-                          /mol:spec Step 1.
-  open-questions.md     # things uncertain during bootstrap; user fills over time
-```
-
-Add `contracts/`, `rubrics/`, `decisions/`, `debt/`, `handoffs/` **only when** repo has real content. Empty directories are not value.
-
-## .claude/ starter (if creating fresh)
-
-```
-.claude/
-  specs/                # active runtime artifacts; /mol:spec writes here,
-                          /mol:impl ticks + deletes
-    INDEX.md            # one-line entry per live spec; updated by /mol:spec,
-                          pruned by /mol:impl
-```
-
-Skills/agents/hooks/settings under `.claude/` added later only when justified. Don't pre-create empty `skills/` or `agents/`.
-
----
-
-## Migration table (current-version layout)
-
-| From (legacy)               | To (current)         | Why |
-|-----------------------------|----------------------|-----|
-| `.agent/specs/`             | `.claude/specs/`     | active vs passive split (pre-v0.3.0; specs are runtime artifacts) |
-| `docs/decisions/`           | `.claude/notes/decisions/`  | internal context, not public docs |
-| `docs/contracts/`           | `.claude/notes/contracts/`  | internal context |
-| `docs/agent-rubrics*.md`    | `.claude/notes/rubrics/`    | internal context |
-| `.claude/NOTES.md`          | `.claude/notes/notes.md`    | passive memory belongs in `.claude/notes/`, not `.claude/` root |
-| `.agent/notes.md`           | `.claude/notes/notes.md`    | v0.3.0: passive context folds into `.claude/notes/` per Claude Code spec; name avoids collision with `.claude/agents/` |
-| `.agent/architecture.md`    | `.claude/notes/architecture.md` | v0.3.0 |
-| `.agent/decisions/`         | `.claude/notes/decisions/`  | v0.3.0 |
-| `.agent/rubrics/`           | `.claude/notes/rubrics/`    | v0.3.0 |
-| `.agent/contracts/`         | `.claude/notes/contracts/`  | v0.3.0 |
-| `.agent/debt/`              | `.claude/notes/debt/`       | v0.3.0 |
-| `.agent/handoffs/`          | `.claude/notes/handoffs/`   | v0.3.0 |
-| `.agent/open-questions.md`  | `.claude/notes/open-questions.md` | v0.3.0 |
-| `.agent/README.md`          | `.claude/notes/README.md`   | v0.3.0 |
-| `mol_project.notes_path: .agent/...` or `.claude/NOTES.md` | `mol_project.notes_path: .claude/notes/...` | v0.3.0: frontmatter follows the path move |
-| `mol_project.perf:` block in CLAUDE.md frontmatter | (delete) | `perf.focus` was a single-value enum that didn't scale; `optimizer` agent now detects catalogs per file |
-| `.claude/notes/design-preferences.md` (whole file) | `.claude/notes/law.md` | one rulebook, not two of differing force. Restate each rule as a prohibition ("OOP by default" → "never a free function where a type owns the concept") so a violation is pointable; drop the file |
-| `## Design preferences (default)` in CLAUDE.md | `## Law (never violated)` | same collapse, index side |
-| `## What must never change casually` (any spelling) in CLAUDE.md | `## Law (never violated)`, body → `.claude/notes/law.md` | project invariants are laws; same file, same protection |
-
-Add new rows as new conventions are codified. Layout violation **not** in this table = content-level drift → manual TODO; do not invent moves.
-
----
+A default law id is present when `references/law-template.md` contains it.
 
 ## Guardrails
 
@@ -542,7 +343,7 @@ Add new rows as new conventions are codified. Layout violation **not** in this t
 - **Don't** modify project source. This skill never writes project source.
 - **Don't** assume `mol_project:` is wanted. Offer it; let user opt in.
 - **Don't** rewrite anything outside managed sections, `mol_project:` block, or paths approved for migration.
-- **Don't** invent migrations not in the table. The table *is* the version-spec for layout.
+- **Don't** invent migrations not in `references/migration-table.md`. That table is the version-spec for layout.
 - **Don't** delete user-authored notes / decisions / specs during migration. Move, never drop.
 - **Don't** delete, reword, or soften a law. Migration into `law.md` is a
   **move**; an existing `law.md` is absorbed into, never regenerated.
@@ -577,3 +378,13 @@ Re-runs must be safe:
 - **Update path** (§ 5): two-section plan (Upgrade plan / Manual TODO) → per-item action lines.
 - **Self-check** (§ 6): 🚨 / 🔴 findings, or *"layering check passed"* / *"structural check clean"*.
 - **Final summary**: one line — what was created/repaired, skipped, next step.
+
+## Examples
+
+These select this skill: `/mol:bootstrap`, "初始化 harness", "repair the harness". A feature spec is `/mol:spec`. A module map is `/mol:map`.
+
+Empty repo, no `CLAUDE.md`. Path is create. Show the plan and wait for approval. Then write the router from `references/claude-md-template.md` and `law.md` from `references/law-template.md`. Do not write project source. Do not invoke other mol agents.
+
+Healthy harness → one line: harness in place, nothing to change.
+
+A default law id is missing → plan an append from `references/law-template.md` and wait for go-ahead. Dirty tree without `--allow-dirty` → do not update. A `replace` file → ask before writing it.
