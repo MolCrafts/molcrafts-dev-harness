@@ -1,7 +1,11 @@
 name: test
 
 # The stdlib structural guards under tests/. Nothing is platform-specific, so
-# there is one tier: the same job on every ref.
+# both tiers (`test / tier` decides) run the same job:
+#
+#   fast  a feature-branch push to MolCrafts: test / structural.
+#   full  every push to a fork (proven before its pull request), dev, master
+#         and main on MolCrafts, pull requests, tags and dispatches: the same.
 on:
   push:
     branches: ["**"]
@@ -14,15 +18,25 @@ permissions:
 
 concurrency:
   group: test-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/master' && github.ref != 'refs/heads/main' }}
+  cancel-in-progress: ${{ !contains(fromJSON('["refs/heads/dev","refs/heads/master","refs/heads/main"]'), github.ref) && !startsWith(github.ref, 'refs/tags/') }}
 
 jobs:
+  tier:
+    name: test / tier
+    # A pull request inside a fork was already run, full tier, by its push.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository || github.repository_owner == 'MolCrafts'
+    runs-on: ubuntu-latest
+    outputs:
+      full: ${{ steps.tier.outputs.full }}
+    steps:
+      - id: tier
+        run: echo "full=${{ github.repository_owner != 'MolCrafts' || contains(fromJSON('["dev","master","main"]'), github.ref_name) || github.event_name != 'push' || startsWith(github.ref, 'refs/tags/') }}" | tee -a "$GITHUB_OUTPUT"
+
   structural:
     name: test / structural
-    # A pull request inside a fork was already built by its push.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository || github.repository_owner == 'MolCrafts'
+    needs: tier
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: ./.github/actions/setup-python
+      - uses: MolCrafts/molcrafts-ci/actions/setup-python@master
       - run: python3 -m unittest discover -s tests -p 'test_*.py' -v
