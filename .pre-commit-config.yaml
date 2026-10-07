@@ -1,7 +1,7 @@
 # Managed by prek: `prek install`
 default_install_hook_types: [pre-commit, pre-push]
 
-# Local hooks mirror .github/workflows/validate-plugins.yml exactly.
+# Local hooks mirror .github/workflows/lint.yml and test.yml exactly.
 # Single source of truth for "what CI runs" — keep commands in lockstep.
 # Install:  pre-commit install && pre-commit install --hook-type pre-push
 # Run all:  pre-commit run --all-files
@@ -17,23 +17,9 @@ repos:
         pass_filenames: false
         always_run: true
 
-      - id: test-model-policy
-        name: structural unit tests — model policy
-        entry: python3 tests/test_model_policy.py
-        language: system
-        pass_filenames: false
-        always_run: true
-
-      - id: test-project-blueprint
-        name: structural unit tests — project blueprint
-        entry: python3 tests/test_project_blueprint_mechanism.py
-        language: system
-        pass_filenames: false
-        always_run: true
-
-      - id: test-git-publish
-        name: structural unit tests — git publish
-        entry: python3 tests/test_git_publish.py
+      - id: test-structural
+        name: structural unit tests (CI parity)
+        entry: python3 -m unittest discover -s tests -p 'test_*.py'
         language: system
         pass_filenames: false
         always_run: true
