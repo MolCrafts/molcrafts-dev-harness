@@ -22,7 +22,7 @@ in between and no prompt re-deriving what a tool already does.
 
 ```
 molcrafts-dev-harness/
-├── .github/workflows/validate-plugins.yml # stdlib-only metadata CI
+├── .github/workflows/               # lint.yml + test.yml, stdlib-only (see CI)
 ├── .claude-plugin/marketplace.json   # marketplace registry
 ├── .agents/plugins/marketplace.json  # native Codex marketplace registry
 ├── plugins/
@@ -124,6 +124,17 @@ changes remain single-source.
 Each project's harness is rewritten in place rather than migrated in
 phases — this is continuous iteration. When the plugin is upgraded
 later, run `/mol:bootstrap` to refresh templates and frontmatter.
+
+## CI
+
+| workflow | job | runs |
+| --- | --- | --- |
+| `lint.yml` | `lint / metadata`: `scripts/validate_repository.py` | every push, PRs into dev/master |
+| `test.yml` | `test / structural`: `unittest discover tests/` | every push, PRs into dev/master |
+
+Both are stdlib-only and identical on every branch and in forks;
+`pre-commit run --all-files` runs the same commands. Nothing is published, so
+there is no release or deploy workflow.
 
 ## License
 

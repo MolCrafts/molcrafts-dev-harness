@@ -18,7 +18,7 @@ mol_project:
     bump_skill: release-bump
     gate_skill: check
   ci:
-    config: .github/workflows/validate-plugins.yml
+    config: .github/workflows/
     local: "pre-commit run --all-files"
   notes_path: .claude/notes/notes.md
   specs_path: .claude/specs/
