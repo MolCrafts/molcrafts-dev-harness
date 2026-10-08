@@ -1,6 +1,6 @@
 ---
 name: impl-all
-description: "Drive one spec or a <prefix>-NN chain through /mol:impl. Read each spec's status yourself. One check, one full suite, and `/mol:commit` once at chain end. No per-spec evaluator and no per-spec close."
+description: "Use when driving one spec or a prefix-NN chain through /mol:impl. Read each spec's status yourself. One check, one full suite, and `/mol:commit` once at chain end. No per-spec evaluator or close."
 argument-hint: "<spec-prefix or slug>"
 ---
 
@@ -49,3 +49,15 @@ One row per spec: `done` or `stopped`.
 ```
 /mol:impl-all: <N> done, <K> failed; chain <prefix>
 ```
+
+## Examples
+
+These select this skill: `/mol:impl-all box-wrap`, "把 box-wrap 整链做完", "run the approved chain". One lone spec is `/mol:impl`. Closing a finished spec is `/mol:close`.
+
+`box-wrap-01` and `box-wrap-02` are `approved`. Invoke `/mol:impl box-wrap-01 --chain`, then `box-wrap-02 --chain`. Read each spec yourself. Both end `code-complete` with only `note: chain-end gate` left. Run `$META.build.check` and `$META.build.test` once. Invoke `/mol:commit` once.
+
+```
+/mol:impl-all: 2 done, 0 failed; chain box-wrap
+```
+
+`draft` specs → stop and name them. One matching spec → `/mol:impl` with no `--chain`, then stop. A criterion `failed`, or status still `approved` after impl → stop the chain. Do not invoke `/mol:close`.

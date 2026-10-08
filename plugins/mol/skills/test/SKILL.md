@@ -15,3 +15,9 @@ Read CLAUDE.md → parse `mol_project:` (`$META`).
 3. **Coverage** — if `$META.build.coverage` set, flag modules below CLAUDE target (else 80%).
 
 Output: counts; coverage; layout/naming/e2e/third-party findings; missing categories; failure classification only (`/mol:debug` fixes). One-line summary.
+
+## Example
+
+`/mol:test tests/test_box.py` and `build.test_single` is `python3 -m pytest {path}`. Run that path. `tester` analyze-mode reports layout. `build.coverage` unset → skip coverage and say the key is absent. Do not invent a percentage.
+
+The test command is missing from `mol_project.build` → stop and name the key. The runner crashes or exits before a summary → call it infra, not a product failure. A failing test → classify it in the summary. The fix is `/mol:debug`, not this skill.
