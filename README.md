@@ -130,11 +130,13 @@ later, run `/mol:bootstrap` to refresh templates and frontmatter.
 | workflow | job | runs |
 | --- | --- | --- |
 | `lint.yml` | `lint / metadata`: `scripts/validate_repository.py` | every push, PRs into dev/master/main |
-| `test.yml` | `test / tier`, `test / structural`: `unittest discover tests/` | every push, PRs into dev/master/main |
+| `test.yml` | `test / context`, `test / structural`: `unittest discover tests/` | every push, PRs into dev/master/main |
 
 Both are stdlib-only and identical on every branch and in forks (the fast and
 full tiers run the same job); `pre-commit run --all-files` runs the same
-commands. Shared setup comes from `MolCrafts/molcrafts-ci/actions`. Nothing is
+commands. Each workflow's first job, `<file> / context`, runs
+`MolCrafts/molcrafts-ci/actions/ci-context`; the other jobs gate on its
+outputs. Shared setup comes from `MolCrafts/molcrafts-ci/actions`. Nothing is
 published, so there is no release or deploy workflow.
 
 ## License
