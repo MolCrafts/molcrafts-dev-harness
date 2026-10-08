@@ -129,7 +129,7 @@ later, run `/mol:bootstrap` to refresh templates and frontmatter.
 
 | workflow | job | runs |
 | --- | --- | --- |
-| `lint.yml` | `lint / metadata`: `scripts/validate_repository.py` | every push, PRs into dev/master/main |
+| `lint.yml` | `lint / metadata`: `scripts/validate_repository.py`; `lint / workflows`: MolCrafts/molcrafts-ci/actions/check-workflows | every push, PRs into dev/master/main |
 | `test.yml` | `test / context`, `test / structural`: `unittest discover tests/` | every push, PRs into dev/master/main |
 
 Both are stdlib-only and identical on every branch and in forks (the fast and
